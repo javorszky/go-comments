@@ -1,0 +1,1 @@
+{{define "clientjs"}}console.log("The id of the thing requesting this was {{.}}");{{end}}
