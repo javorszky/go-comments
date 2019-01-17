@@ -24,7 +24,7 @@ func main() {
 	e := echo.New()
 
 	t := &Template{
-		templates: template.Must(template.ParseGlob("public/views/*.js")),
+		templates: template.Must(template.ParseGlob("public/**/*.(js|html)")),
 	}
 
 	e.Renderer = t
