@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/labstack/echo/middleware"
 	"html/template"
 	"io"
 	"log"
@@ -24,6 +25,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 
 func main() {
 	e := echo.New()
+	e.Use(middleware.Gzip())
 
 	files := getTemplates("public/js/*.js", "public/views/*.html")
 
