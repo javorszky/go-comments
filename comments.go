@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/labstack/echo"
 )
@@ -23,19 +24,27 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func main() {
 	e := echo.New()
 
+	var templates []string
+
+	js, _ := filepath.Glob("public/js/*.js")
+	html, _ := filepath.Glob("public/views/*.html")
+
+	templates = append(templates, js...)
+	templates = append(templates, html...)
+
 	t := &Template{
-		templates: template.Must(template.ParseGlob("public/**/*.(js|html)")),
+		templates: template.Must(template.ParseFiles(templates...)),
 	}
 
 	e.Renderer = t
 
 	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		return c.Render(http.StatusOK, "index.html", "")
 	})
 
 	e.GET("/:id/js", func(c echo.Context) error {
 		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
-		return c.Render(http.StatusOK, "clientjs", c.Param("id"))
+		return c.Render(http.StatusOK, "client.js", c.Param("id"))
 	})
 
 	port := os.Getenv("PORT")
