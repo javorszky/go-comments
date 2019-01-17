@@ -40,11 +40,9 @@ func main() {
 	templates = append(templates, js...)
 	templates = append(templates, html...)
 
-	t := &Template{
+	e.Renderer = &Template{
 		templates: template.Must(template.ParseFiles(templates...)),
 	}
-
-	e.Renderer = t
 
 	e.GET("/", func(c echo.Context) error {
 		return c.Render(http.StatusOK, "index.html", "")
