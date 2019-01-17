@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/middleware"
 	"html/template"
 	"io"
@@ -18,12 +20,26 @@ type Template struct {
 	templates *template.Template
 }
 
+type User struct {
+	gorm.Model
+	Email        string
+	PasswordHash string
+}
+
 // Render function: Overridden Render function for templates
 func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
 func main() {
+	// Database
+	db, err := gorm.Open("mysql", "root:root@/go.comments?charset=utf8mb4&parseTime=True&loc=Local")
+	if err != nil {
+		log.Fatalf("Failed connecting to database: %v", err)
+	}
+
+	defer db.Close()
+
 	e := echo.New()
 	e.Use(middleware.Gzip())
 	e.Static("/static", "public/static")
