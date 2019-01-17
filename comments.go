@@ -25,23 +25,10 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func main() {
 	e := echo.New()
 
-	var templates []string
-
-	js, err := filepath.Glob("public/js/*.js")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	html, err := filepath.Glob("public/views/*.html")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	templates = append(templates, js...)
-	templates = append(templates, html...)
+	files := getTemplates("public/js/*.js", "public/views/*.html")
 
 	e.Renderer = &Template{
-		templates: template.Must(template.ParseFiles(templates...)),
+		templates: template.Must(template.ParseFiles(files...)),
 	}
 
 	e.GET("/", func(c echo.Context) error {
@@ -60,4 +47,19 @@ func main() {
 	}
 
 	e.Logger.Fatal(e.Start(":" + port))
+}
+
+// getTemplates variadic function that takes any number of single glob patterns
+func getTemplates(paths ...string) []string {
+	var templates []string
+
+	for _, path := range paths {
+		files, err := filepath.Glob(path)
+		if err != nil {
+			log.Fatal(err)
+		}
+		templates = append(templates, files...)
+	}
+
+	return templates
 }
