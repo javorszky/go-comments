@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -26,8 +27,15 @@ func main() {
 
 	var templates []string
 
-	js, _ := filepath.Glob("public/js/*.js")
-	html, _ := filepath.Glob("public/views/*.html")
+	js, err := filepath.Glob("public/js/*.js")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	html, err := filepath.Glob("public/views/*.html")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	templates = append(templates, js...)
 	templates = append(templates, html...)
