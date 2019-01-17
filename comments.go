@@ -34,6 +34,7 @@ func main() {
 	})
 
 	e.GET("/:id/js", func(c echo.Context) error {
+		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
 		return c.Render(http.StatusOK, "clientjs", c.Param("id"))
 	})
 
