@@ -26,6 +26,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func main() {
 	e := echo.New()
 	e.Use(middleware.Gzip())
+	e.Static("/static", "public/static")
 
 	files, err := getTemplates("public/js/*.js", "public/views/*.html")
 
