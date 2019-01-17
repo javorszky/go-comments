@@ -27,7 +27,11 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Gzip())
 
-	files := getTemplates("public/js/*.js", "public/views/*.html")
+	files, err := getTemplates("public/js/*.js", "public/views/*.html")
+
+	if nil != err {
+		log.Fatal(err)
+	}
 
 	e.Renderer = &Template{
 		templates: template.Must(template.ParseFiles(files...)),
@@ -52,16 +56,14 @@ func main() {
 }
 
 // getTemplates variadic function that takes any number of single glob patterns
-func getTemplates(paths ...string) []string {
-	var templates []string
-
+func getTemplates(paths ...string) (templates []string, err error) {
 	for _, path := range paths {
 		files, err := filepath.Glob(path)
 		if err != nil {
-			log.Fatal(err)
+			return nil, err
 		}
 		templates = append(templates, files...)
 	}
 
-	return templates
+	return templates, nil
 }
