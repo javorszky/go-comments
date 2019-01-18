@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/middleware"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	"github.com/labstack/echo"
@@ -33,13 +31,15 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 func main() {
-	err := godotenv.Load()
+	// Config
+	config, err := getConfig()
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Failed getting config. Error was %v", err)
 	}
 
 	// Database
-	db, err := gorm.Open("mysql", fmt.Sprintf("%v:%v@/%v?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("DB_USER"), os.Getenv("DB_PASS"), os.Getenv("DB_TABLE")))
+	db, err := gorm.Open("mysql", fmt.Sprintf("%v:%v@/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseTable))
 
 	if err != nil {
 		log.Fatalf("Failed connecting to database: %v", err)
@@ -70,7 +70,7 @@ func main() {
 		return c.Render(http.StatusOK, "client.js", c.Param("id"))
 	})
 
-	port := os.Getenv("PORT")
+	port := config.Port
 	if port == "" {
 		fmt.Print("Port not in env, setting it to 8090")
 		port = "8090"

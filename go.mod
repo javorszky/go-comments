@@ -5,7 +5,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/jinzhu/gorm v1.9.2
 	github.com/jinzhu/inflection v0.0.0-20180308033659-04140366298a // indirect
-	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo v3.3.5+incompatible
 	github.com/labstack/gommon v0.2.8 // indirect
 	github.com/mattn/go-colorable v0.0.9 // indirect
