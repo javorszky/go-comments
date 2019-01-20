@@ -50,7 +50,7 @@ func main() {
 	e.Use(middleware.Gzip())
 	e.Static("/static", "public/static")
 
-	files, err := getTemplates("public/js/*.js", "public/views/*.html")
+	files, err := getTemplates("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
 
 	if nil != err {
 		log.Fatalf("Failed parsing templates: %v", err)
@@ -61,7 +61,15 @@ func main() {
 	}
 
 	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "index.html", "")
+		return c.Render(http.StatusOK, "index", "")
+	})
+
+	e.GET("/login", func(c echo.Context) error {
+		return c.Render(http.StatusOK, "login", "")
+	})
+
+	e.GET("/register", func(c echo.Context) error {
+		return c.Render(http.StatusOK, "register", "")
 	})
 
 	e.GET("/:id/js", func(c echo.Context) error {
