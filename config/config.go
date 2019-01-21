@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -13,8 +13,8 @@ type Config struct {
 	Port             string
 }
 
-// getConfig returns a config object that is built from environment variables
-func getConfig() (*Config, error) {
+// Get returns a config object that is built from environment variables
+func Get() (*Config, error) {
 	err := godotenv.Load()
 	if err != nil {
 		return nil, fmt.Errorf("error loading .env file")

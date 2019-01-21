@@ -1,6 +1,7 @@
 package main
 
 import (
+	"comments/config"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -31,7 +32,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 
 func main() {
 	// Config
-	config, err := getConfig()
+	config, err := config.Get()
 
 	if err != nil {
 		log.Fatalf("Failed getting config. Error was %v", err)
