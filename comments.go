@@ -1,9 +1,9 @@
 package main
 
 import (
-	"comments/config"
-	"comments/templates"
 	"fmt"
+	"github.com/javorszky/go-comments/config"
+	"github.com/javorszky/go-comments/templates"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/middleware"
