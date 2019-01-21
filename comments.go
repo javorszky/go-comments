@@ -2,6 +2,7 @@ package main
 
 import (
 	"comments/config"
+	"comments/templates"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -51,7 +52,7 @@ func main() {
 	e.Use(middleware.Gzip())
 	e.Static("/static", "public/static")
 
-	files, err := getTemplates("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
+	files, err := templates.Get("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
 
 	if nil != err {
 		log.Fatalf("Failed parsing templates: %v", err)

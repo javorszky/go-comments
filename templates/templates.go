@@ -1,12 +1,12 @@
-package main
+package templates
 
 import (
 	"fmt"
 	"path/filepath"
 )
 
-// getTemplates variadic function that takes any number of single glob patterns
-func getTemplates(paths ...string) (templates []string, err error) {
+// Get variadic function that takes any number of single glob patterns
+func Get(paths ...string) (templates []string, err error) {
 	for _, path := range paths {
 		files, err := filepath.Glob(path)
 		if err != nil {
