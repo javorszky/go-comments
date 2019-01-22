@@ -1,0 +1,19 @@
+version: '2'
+services:
+  web:
+    build: .
+    ports:
+      - "5000:1323"
+    depends_on:
+      - db
+    command: ["./wait-for-it.sh", "db:3306", "--", "./main"]
+  db:
+    image: "mysql"
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: go.comments
+      MYSQL_USER: go
+      MYSQL_PASSWORD: somewhere
+      MYSQL_ALLOW_EMPTY_PASSWORD: "no"
