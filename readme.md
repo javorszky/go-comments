@@ -61,7 +61,7 @@ export PATH=$PATH:$GOROOT/bin
 
 See https://gist.github.com/vsouza/77e6b20520d07652ed7d for more variations.
 
-Once you have the files (`cert.pem` and `key.pem`), rename them to `cert.crt` and `key.key`. Find the path with `pwd`, and make sure the nginx config file points to these two files.
+Once you have the files (`cert.pem` and `key.pem`), rename them to `cert.crt` and `key.key`. Find the path with `pwd`, and make sure the nginx config file points to these two files. These files are ignored by the `.gitignore` file.
 
 If you're on mac, open the Keychain Access app, and drag the `cert.crt` file into there. Search for **ACME**, and set it to always trust the certificate.
 
