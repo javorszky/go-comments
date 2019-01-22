@@ -31,7 +31,7 @@ server {
 		proxy_ssl_session_reuse on;
 		proxy_pass              https://localhost:1323;
 		proxy_ssl_protocols     TLSv1 TLSv1.1 TLSv1.2;
-        proxy_ssl_ciphers       HIGH:!aNULL:!MD5;
+		proxy_ssl_ciphers       HIGH:!aNULL:!MD5;
 	}
 }
 
