@@ -2,3 +2,5 @@
 .idea
 .env
 go-comments
+cert.crt
+key.key
