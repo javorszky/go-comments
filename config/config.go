@@ -25,6 +25,7 @@ func Get() (*Config, error) {
 		DatabaseUser:     os.Getenv("DB_USER"),
 		DatabasePassword: os.Getenv("DB_PASS"),
 		DatabaseTable:    os.Getenv("DB_TABLE"),
+		DatabaseAddress:  os.Getenv("DB_ADDRESS"),
 		Port:             os.Getenv("PORT"),
 	}
 

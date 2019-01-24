@@ -5,5 +5,9 @@ WORKDIR /build
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 FROM scratch
 COPY --from=builder /build/main /app/
-ADD . /app
+ADD .env.docker /app/.env
+ADD public/ /app/public/
+ADD cert.crt /app
+ADD key.key /app
 WORKDIR /app
+CMD ["./main"]
