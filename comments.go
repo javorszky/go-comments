@@ -39,7 +39,7 @@ func main() {
 		log.Fatalf("Failed getting config: %v", err)
 	}
 
-	db, err = getDb(config)
+	db, err := getDb(config)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -103,8 +103,25 @@ TLS Version: %v<br>
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
 }
 
-func getDb(config *Config) (db *DB, err error) {
-	db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable))
+func getDb(config *config.Config) (db *gorm.DB, err error) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	done := make(chan bool)
+	go func() {
+		time.Sleep(11 * time.Second)
+		done <- true
+	}()
+	for {
+		select {
+		case <-done:
+			fmt.Println("Done!")
+			log.Fatalf("Failed parsing templates: %v", err)
+		case t := <-ticker.C:
+			db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable))
+			fmt.Println(fmt.Sprintf("current time is %v", t))
+
+		}
+	}
 
 	return db, err
 }
