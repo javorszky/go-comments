@@ -36,7 +36,7 @@ func main() {
 	config, err := config.Get()
 
 	if err != nil {
-		log.Fatalf("Failed getting config. Error was %v", err)
+		log.Fatalf("Failed getting config: %v", err)
 	}
 
 	// Database
