@@ -73,5 +73,21 @@ The `.env` file needs to contain the following four things:
 DB_USER=<your mysql db username>
 DB_PASS=<your mysql db user's password>
 DB_TABLE=<your mysql database name>
+DB_ADDRESS=""
 PORT=<port for http. HTTPS is currently always on 1323>
 ```
+
+## How to use this with Docker?
+
+The repo has three docker related files:
+
+- `Dockerfile`
+- `docker-compose.yml`
+- `.env.docker`
+
+All three files are needed for a successful docker initialisation. Then the only thing you should need to do is issue this command:
+
+```dotenv
+$ docker-compose up --build
+```
+That way the app should be accessible on `https://localhost:5000`, which should be SSL, but the certificate should be untrusted.
