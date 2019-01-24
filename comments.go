@@ -6,13 +6,13 @@ import (
 	"github.com/javorszky/go-comments/templates"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/labstack/echo"
+	"time"
 )
 
 // Template struct for working with templates and echo
@@ -104,24 +104,19 @@ TLS Version: %v<br>
 }
 
 func getDb(config *config.Config) (db *gorm.DB, err error) {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	done := make(chan bool)
-	go func() {
-		time.Sleep(11 * time.Second)
-		done <- true
-	}()
-	for {
-		select {
-		case <-done:
-			fmt.Println("Done!")
-			log.Fatalf("Failed parsing templates: %v", err)
-		case t := <-ticker.C:
-			db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable))
-			fmt.Println(fmt.Sprintf("current time is %v", t))
+	tries := 1
+	for tries < 5 {
 
+		tries++
+
+		db, err := gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress))
+		if err == nil {
+			return db, nil
 		}
+
+		fmt.Println(fmt.Sprintf("Database not open yet on %v, sleeping for 2 seconds.", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable)))
+		time.Sleep(2 * time.Second)
 	}
 
-	return db, err
+	return nil, fmt.Errorf("could not connect to database in 10 seconds: %v", err)
 }

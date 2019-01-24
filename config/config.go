@@ -10,12 +10,13 @@ type Config struct {
 	DatabaseUser     string
 	DatabasePassword string
 	DatabaseTable    string
+	DatabaseAddress  string
 	Port             string
 }
 
 // Get returns a config object that is built from environment variables
 func Get() (*Config, error) {
-	err := godotenv.Load()
+	err := godotenv.Load(".env")
 	if err != nil {
 		return nil, fmt.Errorf("error loading .env file")
 	}
