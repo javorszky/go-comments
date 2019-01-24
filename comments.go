@@ -39,11 +39,9 @@ func main() {
 		log.Fatalf("Failed getting config: %v", err)
 	}
 
-	// Database
-	db, err := gorm.Open("mysql", fmt.Sprintf("%v:%v@/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseTable))
-
+	db, err = getDb(config)
 	if err != nil {
-		log.Fatalf("Failed connecting to database: %v", err)
+		log.Fatalf("failed to connect to database: %v", err)
 	}
 
 	defer db.Close()
@@ -103,4 +101,10 @@ TLS Version: %v<br>
 
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
+}
+
+func getDb(config *Config) (db *DB, err error) {
+	db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable))
+
+	return db, err
 }
