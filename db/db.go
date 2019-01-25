@@ -8,7 +8,7 @@ import (
 )
 
 // GetDb is a function to return an instance of an opened database after making sure it can be connected to
-func GetDb(config *config.Config) (db *gorm.DB, err error) {
+func Get(config *config.Config) (db *gorm.DB, err error) {
 	tries := 1
 	for tries < 5 {
 
