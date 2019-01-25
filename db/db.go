@@ -14,12 +14,15 @@ func Get(config *config.Config) (db *gorm.DB, err error) {
 
 		tries++
 
-		db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress))
+		db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseRootUser, config.DatabaseRootPassword, config.DatabaseAddress))
 		if err == nil {
 			fmt.Println(fmt.Sprintf("Connected to %s, creating database %s.", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress), config.DatabaseTable))
 
 			db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", config.DatabaseTable))
 			db.Exec(fmt.Sprintf("USE `%s`", config.DatabaseTable))
+			db.Close()
+			db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress))
+
 			return db, nil
 		}
 
