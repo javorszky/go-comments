@@ -3,7 +3,7 @@ services:
   web:
     build: .
     ports:
-      - "5000:1323"
+      - "1323:1323"
     depends_on:
       - db
   db:
