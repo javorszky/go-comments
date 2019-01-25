@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/javorszky/go-comments/config"
+	"github.com/javorszky/go-comments/db"
 	"github.com/javorszky/go-comments/templates"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -12,7 +13,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"time"
 )
 
 // Template struct for working with templates and echo
@@ -39,7 +39,7 @@ func main() {
 		log.Fatalf("Failed getting config: %v", err)
 	}
 
-	db, err := getDb(config)
+	db, err := database.GetDb(config)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -101,22 +101,4 @@ TLS Version: %v<br>
 
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
-}
-
-func getDb(config *config.Config) (db *gorm.DB, err error) {
-	tries := 1
-	for tries < 5 {
-
-		tries++
-
-		db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress))
-		if err == nil {
-			return db, nil
-		}
-
-		fmt.Println(fmt.Sprintf("Database not open yet on %v, sleeping for 2 seconds.", fmt.Sprintf("%v:%v@%v/%v?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable)))
-		time.Sleep(2 * time.Second)
-	}
-
-	return nil, fmt.Errorf("could not connect to database in 10 seconds: %v", err)
 }
