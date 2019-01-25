@@ -4,26 +4,19 @@ import (
 	"fmt"
 	"github.com/javorszky/go-comments/config"
 	"github.com/javorszky/go-comments/db"
+	"github.com/javorszky/go-comments/handlers"
 	"github.com/javorszky/go-comments/templates"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"html/template"
 	"io"
 	"log"
-	"net/http"
 )
 
 // Template struct for working with templates and echo
 type Template struct {
 	templates *template.Template
-}
-
-type User struct {
-	gorm.Model
-	Email        string
-	PasswordHash string
 }
 
 // Render function: Overridden Render function for templates
@@ -60,38 +53,17 @@ func main() {
 		templates: template.Must(template.ParseFiles(files...)),
 	}
 
-	e.GET("/", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "index", "")
-	})
+	e.GET("/", handlers.Index)
 
-	e.GET("/login", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "login", "")
-	})
+	e.GET("/login", handlers.Login)
 
-	e.GET("/register", func(c echo.Context) error {
-		return c.Render(http.StatusOK, "register", "")
-	})
+	e.POST("/register", handlers.RegisterPost)
 
-	e.GET("/:id/js", func(c echo.Context) error {
-		c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
-		return c.Render(http.StatusOK, "client.js", c.Param("id"))
-	})
+	e.GET("/register", handlers.Register)
 
-	e.GET("/request", func(c echo.Context) error {
-		req := c.Request()
-		format := `
-<code>
-Protocol: %s<br>
-Host: %s<br>
-Remote Address: %s<br>
-Method: %s<br>
-Path: %s<br>
-TLS: %v<br>
-TLS Version: %v<br>
-</code>
-`
-		return c.HTML(http.StatusOK, fmt.Sprintf(format, req.Proto, req.Host, req.RemoteAddr, req.Method, req.URL.Path, req.TLS.NegotiatedProtocol, req.TLS.Version))
-	})
+	e.GET("/:id/js", handlers.ServeJS)
+
+	e.GET("/request", handlers.Request)
 
 	port := config.Port
 	if port == "" {
