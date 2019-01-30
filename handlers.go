@@ -27,7 +27,6 @@ func Register(c echo.Context) error {
 }
 
 func RegisterPost(c echo.Context) (err error) {
-	fmt.Println("this is registerpost")
 	u := new(User)
 	if err = c.Bind(u); err != nil {
 		return fmt.Errorf("binding user failed")
