@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/javorszky/go-comments/config"
 	"github.com/javorszky/go-comments/db"
-	"github.com/javorszky/go-comments/handlers"
-	"github.com/javorszky/go-comments/templates"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
@@ -31,19 +29,19 @@ func main() {
 	e.Use(middleware.Gzip())
 	e.Static("/static", "public/static")
 
-	templates.SetRenderer(e)
+	SetRenderer(e)
 
-	e.GET("/", handlers.Index)
+	e.GET("/", Index)
 
-	e.GET("/login", handlers.Login)
+	e.GET("/login", Login)
 
-	e.POST("/register", handlers.RegisterPost)
+	e.POST("/register", RegisterPost)
 
-	e.GET("/register", handlers.Register)
+	e.GET("/register", Register)
 
-	e.GET("/:id/js", handlers.ServeJS)
+	e.GET("/:id/js", ServeJS)
 
-	e.GET("/request", handlers.Request)
+	e.GET("/request", Request)
 
 	port := config.Port
 	if port == "" {
