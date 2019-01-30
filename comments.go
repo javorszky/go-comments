@@ -9,20 +9,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"html/template"
-	"io"
 	"log"
 )
-
-// Template struct for working with templates and echo
-type Template struct {
-	templates *template.Template
-}
-
-// Render function: Overridden Render function for templates
-func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return t.templates.ExecuteTemplate(w, name, data)
-}
 
 func main() {
 	// Config
@@ -43,15 +31,7 @@ func main() {
 	e.Use(middleware.Gzip())
 	e.Static("/static", "public/static")
 
-	files, err := templates.Get("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
-
-	if nil != err {
-		log.Fatalf("Failed parsing templates: %v", err)
-	}
-
-	e.Renderer = &Template{
-		templates: template.Must(template.ParseFiles(files...)),
-	}
+	templates.SetRenderer(e)
 
 	e.GET("/", handlers.Index)
 
