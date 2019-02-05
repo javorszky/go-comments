@@ -9,9 +9,14 @@ import (
 
 type User struct {
 	gorm.Model
-	Email        string `json:"email" form:"email"`
-	Name         string `json:"name" form:"name"`
-	PasswordHash string `json:"password" form:"password"`
+	Email       string `json:"email" form:"email"`
+	Name        string `json:"name" form:"name"`
+	PasswordOne string `json:"password1" form:"password1"`
+	PasswordTwo string `json:"password2" form:"password2"`
+}
+
+type ResponseError struct {
+	Error string `json:"error"`
 }
 
 func Index(c echo.Context) error {
@@ -31,6 +36,12 @@ func RegisterPost(c echo.Context) (err error) {
 	if err = c.Bind(u); err != nil {
 		return fmt.Errorf("binding user failed")
 	}
+
+	if u.PasswordOne != u.PasswordTwo {
+		e := ResponseError{Error: "Passwords do not match."}
+		return c.JSON(http.StatusBadRequest, e)
+	}
+
 	return c.JSON(http.StatusOK, u)
 }
 

@@ -11,8 +11,11 @@ import (
 
 var (
 	serveJS        = `console.log("The id of the thing requesting this was 44");`
-	mockUser       = `{"email":"test@example.com","name":"John Doe","password":"somepassword"}`
-	mockUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password":"somepassword"}`
+	mockUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword"}`
+	mockUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password1":"somepassword","password2":"somepassword"}`
+
+	mockBadUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"someotherpass"}`
+	mockBadUserReturn = `{"error":"Passwords do not match."}`
 )
 
 func TestServeJS(t *testing.T) {
@@ -78,7 +81,7 @@ func TestRegister(t *testing.T) {
 	}
 }
 
-func TestRegisterPost(t *testing.T) {
+func TestRegisterPostGood(t *testing.T) {
 	e := echo.New()
 	SetRenderer(e)
 
@@ -92,5 +95,22 @@ func TestRegisterPost(t *testing.T) {
 	if assert.NoError(t, RegisterPost(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, mockUserReturn, rec.Body.String())
+	}
+}
+
+func TestRegisterPostBad(t *testing.T) {
+	e := echo.New()
+	SetRenderer(e)
+
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+	c.SetPath("/register")
+
+	if assert.NoError(t, RegisterPost(c)) {
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, mockBadUserReturn, rec.Body.String())
 	}
 }
