@@ -20,19 +20,42 @@ type ResponseError struct {
 	Error string `json:"error"`
 }
 
-func Index(c echo.Context) error {
+type PasswordChecker interface {
+	IsPasswordPwnd(string) (bool, error)
+}
+
+type PwChecker struct{}
+
+func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
+	pwd, err := pwchecker.CheckForPwnage(password)
+	if err != nil {
+		return false, err
+	}
+
+	return pwd.Pwnd, nil
+}
+
+type Handlers struct {
+	pwc PasswordChecker
+}
+
+func NewHandler(pwc PasswordChecker) Handlers {
+	return Handlers{pwc}
+}
+
+func (h *Handlers) Index(c echo.Context) error {
 	return c.Render(http.StatusOK, "index", "")
 }
 
-func Login(c echo.Context) error {
+func (h *Handlers) Login(c echo.Context) error {
 	return c.Render(http.StatusOK, "login", "")
 }
 
-func Register(c echo.Context) error {
+func (h *Handlers) Register(c echo.Context) error {
 	return c.Render(http.StatusOK, "register", "")
 }
 
-func RegisterPost(c echo.Context) (err error) {
+func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 	u := new(User)
 	if err = c.Bind(u); err != nil {
 		return fmt.Errorf("binding user failed")
@@ -43,7 +66,7 @@ func RegisterPost(c echo.Context) (err error) {
 		return c.JSON(http.StatusUnprocessableEntity, e)
 	}
 
-	pwdCheck, err := pwchecker.CheckForPwnage(u.PasswordOne)
+	pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
 
 	// Something went wrong while checking the API
 	if err != nil {
@@ -51,20 +74,20 @@ func RegisterPost(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadGateway, e)
 	}
 
-	if pwdCheck.Pwnd {
-		e := ResponseError{Error: fmt.Sprintf("Password is found in the database %s times.", pwdCheck.TmPwnd)}
+	if pwdCheck {
+		e := ResponseError{Error: "Password is found in the database."}
 		return c.JSON(http.StatusUnprocessableEntity, e)
 	}
 
 	return c.JSON(http.StatusOK, u)
 }
 
-func ServeJS(c echo.Context) error {
+func (h *Handlers) ServeJS(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
 	return c.Render(http.StatusOK, "client.js", c.Param("id"))
 }
 
-func Request(c echo.Context) error {
+func (h *Handlers) Request(c echo.Context) error {
 	req := c.Request()
 	format := `
 <code>

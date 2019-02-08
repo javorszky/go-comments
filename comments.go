@@ -31,17 +31,20 @@ func main() {
 
 	SetRenderer(e)
 
-	e.GET("/", Index)
+	pwc := PwChecker{}
+	h := NewHandler(pwc)
 
-	e.GET("/login", Login)
+	e.GET("/", h.Index)
 
-	e.POST("/register", RegisterPost)
+	e.GET("/login", h.Login)
 
-	e.GET("/register", Register)
+	e.POST("/register", h.RegisterPost)
 
-	e.GET("/:id/js", ServeJS)
+	e.GET("/register", h.Register)
 
-	e.GET("/request", Request)
+	e.GET("/:id/js", h.ServeJS)
+
+	e.GET("/request", h.Request)
 
 	port := config.Port
 	if port == "" {

@@ -110,7 +110,7 @@ func TestRegisterPostBad(t *testing.T) {
 	c.SetPath("/register")
 
 	if assert.NoError(t, RegisterPost(c)) {
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 		assert.Equal(t, mockBadUserReturn, rec.Body.String())
 	}
 }
