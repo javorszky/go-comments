@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
+	"github.com/masonj88/pwchecker"
 	"net/http"
 )
 
@@ -39,7 +40,20 @@ func RegisterPost(c echo.Context) (err error) {
 
 	if u.PasswordOne != u.PasswordTwo {
 		e := ResponseError{Error: "Passwords do not match."}
-		return c.JSON(http.StatusBadRequest, e)
+		return c.JSON(http.StatusUnprocessableEntity, e)
+	}
+
+	pwdCheck, err := pwchecker.CheckForPwnage(u.PasswordOne)
+
+	// Something went wrong while checking the API
+	if err != nil {
+		e := ResponseError{Error: err.Error()}
+		return c.JSON(http.StatusBadGateway, e)
+	}
+
+	if pwdCheck.Pwnd {
+		e := ResponseError{Error: fmt.Sprintf("Password is found in the database %s times.", pwdCheck.TmPwnd)}
+		return c.JSON(http.StatusUnprocessableEntity, e)
 	}
 
 	return c.JSON(http.StatusOK, u)
