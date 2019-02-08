@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -10,16 +11,37 @@ import (
 )
 
 var (
-	serveJS        = `console.log("The id of the thing requesting this was 44");`
-	mockUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword"}`
-	mockUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password1":"somepassword","password2":"somepassword"}`
+	serveJS            = `console.log("The id of the thing requesting this was 44");`
+	mockGoodUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword"}`
+	mockGoodUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password1":"somepassword","password2":"somepassword"}`
 
 	mockBadUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"someotherpass"}`
 	mockBadUserReturn = `{"error":"Passwords do not match."}`
+
+	mockNetworkErrorUser       = `{"email":"test@example.com","name":"John Doe","password1":"NetworkError", "password2":"NetworkError"}`
+	mockNetworkErrorUserReturn = `{"error":"HTTP request failed with error: Unavailable"}`
+
+	mockFoundPassUser       = `{"email":"test@example.com","name":"John Doe","password1":"FoundPassword", "password2":"FoundPassword"}`
+	mockFoundPassUserReturn = `{"error":"Password is found in the database."}`
 )
+
+type MockPasswordChecker struct{}
+
+func (mpwc MockPasswordChecker) IsPasswordPwnd(password string) (bool, error) {
+	switch password {
+	case "NetworkError":
+		return false, fmt.Errorf("HTTP request failed with error: %s", "Unavailable")
+	case "FoundPassword":
+		return true, nil
+	default:
+		return false, nil
+	}
+}
 
 func TestServeJS(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
 	req := httptest.NewRequest(http.MethodGet, "/44/js", nil)
@@ -30,7 +52,7 @@ func TestServeJS(t *testing.T) {
 	c.SetParamNames("id")
 	c.SetParamValues("44")
 
-	if assert.NoError(t, ServeJS(c)) {
+	if assert.NoError(t, h.ServeJS(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 		assert.Equal(t, serveJS, rec.Body.String())
 	}
@@ -38,6 +60,8 @@ func TestServeJS(t *testing.T) {
 
 func TestIndex(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -46,13 +70,15 @@ func TestIndex(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/")
 
-	if assert.NoError(t, Index(c)) {
+	if assert.NoError(t, h.Index(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 }
 
 func TestLogin(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
 	req := httptest.NewRequest(http.MethodGet, "/login", nil)
@@ -61,13 +87,15 @@ func TestLogin(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/login")
 
-	if assert.NoError(t, Login(c)) {
+	if assert.NoError(t, h.Login(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 }
 
 func TestRegister(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
 	req := httptest.NewRequest(http.MethodGet, "/register", nil)
@@ -76,30 +104,34 @@ func TestRegister(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/register")
 
-	if assert.NoError(t, Register(c)) {
+	if assert.NoError(t, h.Register(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 	}
 }
 
 func TestRegisterPostGood(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockUser))
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockGoodUser))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 
 	c := e.NewContext(req, rec)
 	c.SetPath("/register")
 
-	if assert.NoError(t, RegisterPost(c)) {
+	if assert.NoError(t, h.RegisterPost(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, mockUserReturn, rec.Body.String())
+		assert.Equal(t, mockGoodUserReturn, rec.Body.String())
 	}
 }
 
-func TestRegisterPostBad(t *testing.T) {
+func TestRegisterPostPasswordDontMatch(t *testing.T) {
 	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
 	SetRenderer(e)
 
 	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
@@ -109,8 +141,46 @@ func TestRegisterPostBad(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/register")
 
-	if assert.NoError(t, RegisterPost(c)) {
+	if assert.NoError(t, h.RegisterPost(c)) {
 		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
 		assert.Equal(t, mockBadUserReturn, rec.Body.String())
+	}
+}
+
+func TestRegisterPostNetworkError(t *testing.T) {
+	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
+	SetRenderer(e)
+
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockNetworkErrorUser))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+	c.SetPath("/register")
+
+	if assert.NoError(t, h.RegisterPost(c)) {
+		assert.Equal(t, http.StatusBadGateway, rec.Code)
+		assert.Equal(t, mockNetworkErrorUserReturn, rec.Body.String())
+	}
+}
+
+func TestRegisterPasswordPawned(t *testing.T) {
+	e := echo.New()
+	mpwc := MockPasswordChecker{}
+	h := NewHandler(mpwc)
+	SetRenderer(e)
+
+	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockFoundPassUser))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+	c.SetPath("/register")
+
+	if assert.NoError(t, h.RegisterPost(c)) {
+		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+		assert.Equal(t, mockFoundPassUserReturn, rec.Body.String())
 	}
 }
