@@ -20,7 +20,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 }
 
 // Get variadic function that takes any number of single glob patterns
-func Get(paths ...string) (templates []string, err error) {
+func GetTemplates(paths ...string) (templates []string, err error) {
 	for _, path := range paths {
 		files, err := filepath.Glob(path)
 		if err != nil {
@@ -33,7 +33,7 @@ func Get(paths ...string) (templates []string, err error) {
 }
 
 func GetTemplateFiles() ([]string, error) {
-	files, err := Get("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
+	files, err := GetTemplates("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
 
 	if nil != err {
 		return nil, fmt.Errorf("failed parsing templates: %v", err)
