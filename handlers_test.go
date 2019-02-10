@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
@@ -23,6 +24,10 @@ var (
 
 	mockFoundPassUser       = `{"email":"test@example.com","name":"John Doe","password1":"FoundPassword", "password2":"FoundPassword"}`
 	mockFoundPassUserReturn = `{"error":"Password is found in the database."}`
+
+	e    *echo.Echo
+	mpwc MockPasswordChecker
+	h    Handlers
 )
 
 type MockPasswordChecker struct{}
@@ -38,12 +43,16 @@ func (mpwc MockPasswordChecker) IsPasswordPwnd(password string) (bool, error) {
 	}
 }
 
-func TestServeJS(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
+func TestMain(m *testing.M) {
+	e = echo.New()
+	mpwc = MockPasswordChecker{}
+	h = NewHandler(mpwc)
 	SetRenderer(e)
 
+	os.Exit(m.Run())
+}
+
+func TestServeJS(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/44/js", nil)
 	rec := httptest.NewRecorder()
 
@@ -59,11 +68,6 @@ func TestServeJS(t *testing.T) {
 }
 
 func TestIndex(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 
@@ -76,11 +80,6 @@ func TestIndex(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodGet, "/login", nil)
 	rec := httptest.NewRecorder()
 
@@ -93,11 +92,6 @@ func TestLogin(t *testing.T) {
 }
 
 func TestRegister(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodGet, "/register", nil)
 	rec := httptest.NewRecorder()
 
@@ -110,11 +104,6 @@ func TestRegister(t *testing.T) {
 }
 
 func TestRegisterPostGood(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockGoodUser))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -129,11 +118,6 @@ func TestRegisterPostGood(t *testing.T) {
 }
 
 func TestRegisterPostPasswordDontMatch(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -148,11 +132,6 @@ func TestRegisterPostPasswordDontMatch(t *testing.T) {
 }
 
 func TestRegisterPostNetworkError(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockNetworkErrorUser))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
@@ -167,11 +146,6 @@ func TestRegisterPostNetworkError(t *testing.T) {
 }
 
 func TestRegisterPasswordPawned(t *testing.T) {
-	e := echo.New()
-	mpwc := MockPasswordChecker{}
-	h := NewHandler(mpwc)
-	SetRenderer(e)
-
 	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockFoundPassUser))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
