@@ -40,8 +40,6 @@ func main() {
 
 	SetRenderer(e)
 
-	pwc := PwChecker{}
-	pwh := Argon2{}
 	pwhParams := argon2Params{
 		memory:      64 * 1024,
 		iterations:  3,
@@ -49,8 +47,8 @@ func main() {
 		saltLength:  16,
 		keyLength:   32,
 	}
-	pwh.Init(pwhParams)
-
+	pwc := PwChecker{}
+	pwh := NewArgon2(pwhParams)
 	h := NewHandler(pwc, &pwh)
 
 	e.GET("/", h.Index)

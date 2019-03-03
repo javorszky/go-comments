@@ -27,9 +27,8 @@ type Argon2 struct {
 	params argon2Params
 }
 
-func (a *Argon2) Init(p argon2Params) {
-	fmt.Println(p)
-	a.params = p
+func NewArgon2(params argon2Params) Argon2 {
+	return Argon2{params: params}
 }
 
 // GenerateFromPassword takes a plaintext string and generates an encoded has string with params in it
