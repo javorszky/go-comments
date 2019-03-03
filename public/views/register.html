@@ -11,7 +11,11 @@
         <input type="password" id="password2" name="password2">
     </label>
     <input type="submit" value="Register">
-    <input type="hidden" name="csrf" value="{{.}}">
+    <input type="hidden" name="csrf" value="{{.Csrf}}">
 </form>
+{{range .Errors}}
+    <p>{{.}}</p>
+{{end}}
+
 {{ template "footer" }}
 {{ end }}

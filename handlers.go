@@ -46,6 +46,11 @@ type Handlers struct {
 	db  *gorm.DB
 }
 
+type BadRegister struct {
+	Csrf   interface{}
+	Errors []error
+}
+
 func NewHandler(pwc PasswordChecker, pwh PasswordHasher, db *gorm.DB) Handlers {
 	return Handlers{pwc, pwh, db}
 }
@@ -59,7 +64,11 @@ func (h *Handlers) Login(c echo.Context) error {
 }
 
 func (h *Handlers) Register(c echo.Context) error {
-	return c.Render(http.StatusOK, "register", c.Get("csrf"))
+	data := BadRegister{
+		c.Get("csrf"),
+		nil,
+	}
+	return c.Render(http.StatusOK, "register", data)
 }
 
 func (h *Handlers) RegisterPost(c echo.Context) (err error) {
@@ -77,12 +86,19 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 
 	if err != nil {
 		e := ResponseError{Error: err.Error()}
+
 		return c.JSON(http.StatusBadGateway, e)
 	}
 
 	u.HashedPassword = hashedPassword
 
-	h.db.Create(&u)
+	if dbErrors := h.db.Create(&u).GetErrors(); dbErrors != nil {
+		data := BadRegister{
+			c.Get("csrf"),
+			dbErrors,
+		}
+		return c.Render(http.StatusBadRequest, "register", data)
+	}
 
 	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
 	//
