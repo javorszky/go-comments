@@ -12,13 +12,13 @@ import (
 
 func main() {
 	// Config
-	config, err := config.Get()
+	localConfig, err := config.Get()
 
 	if err != nil {
 		log.Fatalf("Failed getting config: %v", err)
 	}
 
-	db, err := database.Get(config)
+	db, err := database.Get(localConfig)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -45,8 +45,7 @@ func main() {
 	e.GET("/:id/js", h.ServeJS)
 
 	e.GET("/request", h.Request)
-
-	port := config.Port
+	port := localConfig.Port
 	if port == "" {
 		fmt.Print("Port not in env, setting it to 8090")
 		port = "8090"
