@@ -45,7 +45,6 @@ func RunMigrations(db *gorm.DB) error {
 				type User struct {
 					gorm.Model
 					Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-					Name           string `json:"name" form:"name"`
 					PasswordOne    string `form:"password1" gorm:"-" json:"-"`
 					PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
 					HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
