@@ -28,12 +28,12 @@ func main() {
 	e := echo.New()
 	e.Use(middleware.Gzip())
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		TokenLookup: "form:csrf",
-		TokenLength: 128,
-		CookieName: "_csrf",
+		TokenLookup:  "form:csrf",
+		TokenLength:  128,
+		CookieName:   "_csrf",
 		CookieMaxAge: 300,
 		CookieSecure: true,
-		CookiePath: "/",
+		CookiePath:   "/",
 	}))
 
 	e.Static("/static", "public/static")
