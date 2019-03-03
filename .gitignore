@@ -1,6 +1,16 @@
+# System files
 .DS_Store
+
+# Editor directories
 .idea
+
+# Production .env file
 .env
+
+# Built executables
 go-comments
+comments
+
+# SSL key and cert
 cert.crt
 key.key
