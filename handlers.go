@@ -24,6 +24,11 @@ type PasswordChecker interface {
 	IsPasswordPwnd(string) (bool, error)
 }
 
+type PasswordHasher interface {
+	GenerateFromPassword(string) (string, error)
+	ComparePasswordAndHash(string, string) (bool, error)
+}
+
 type PwChecker struct{}
 
 func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
@@ -37,10 +42,11 @@ func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 
 type Handlers struct {
 	pwc PasswordChecker
+	pwh PasswordHasher
 }
 
-func NewHandler(pwc PasswordChecker) Handlers {
-	return Handlers{pwc}
+func NewHandler(pwc PasswordChecker, pwh PasswordHasher) Handlers {
+	return Handlers{pwc, pwh}
 }
 
 func (h *Handlers) Index(c echo.Context) error {
@@ -66,18 +72,27 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 		return c.JSON(http.StatusUnprocessableEntity, e)
 	}
 
-	pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
+	hashedPassword, err := h.pwh.GenerateFromPassword(u.PasswordOne)
 
-	// Something went wrong while checking the API
 	if err != nil {
 		e := ResponseError{Error: err.Error()}
 		return c.JSON(http.StatusBadGateway, e)
 	}
 
-	if pwdCheck {
-		e := ResponseError{Error: "Password is found in the database."}
-		return c.JSON(http.StatusUnprocessableEntity, e)
-	}
+	fmt.Printf("Password hash is %s", hashedPassword)
+
+	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
+	//
+	//// Something went wrong while checking the API
+	//if err != nil {
+	//	e := ResponseError{Error: err.Error()}
+	//	return c.JSON(http.StatusBadGateway, e)
+	//}
+	//
+	//if pwdCheck {
+	//	e := ResponseError{Error: "Password is found in the database."}
+	//	return c.JSON(http.StatusUnprocessableEntity, e)
+	//}
 
 	return c.JSON(http.StatusOK, u)
 }
