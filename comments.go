@@ -25,6 +25,13 @@ func main() {
 
 	defer db.Close()
 
+	m := database.RunMigrations(db)
+
+	if err = m; err != nil {
+		log.Fatalf("Could not migrate: %v", err)
+	}
+	log.Printf("Migration did run successfully")
+
 	e := echo.New()
 	e.Use(middleware.Gzip())
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
