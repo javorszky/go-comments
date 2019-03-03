@@ -33,14 +33,11 @@ func NewArgon2(params argon2Params) Argon2 {
 
 // GenerateFromPassword takes a plaintext string and generates an encoded has string with params in it
 func (a *Argon2) GenerateFromPassword(password string) (encodedHash string, err error) {
-	fmt.Println(a.params)
 	salt, err := a.GenerateRandomBytes()
 
 	if err != nil {
 		return "", err
 	}
-
-	fmt.Println(a.params)
 
 	// Pass the plaintext password, salt and parameters to the argon2.IDKey
 	// function. This will generate a hash of the password using the Argon2id
