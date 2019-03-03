@@ -10,10 +10,11 @@ import (
 
 type User struct {
 	gorm.Model
-	Email       string `json:"email" form:"email"`
-	Name        string `json:"name" form:"name"`
-	PasswordOne string `json:"password1" form:"password1"`
-	PasswordTwo string `json:"password2" form:"password2"`
+	Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+	Name           string `json:"name" form:"name"`
+	PasswordOne    string `form:"password1" gorm:"-" json:"-"`
+	PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
+	HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
 }
 
 type ResponseError struct {
@@ -79,7 +80,7 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadGateway, e)
 	}
 
-	fmt.Printf("Password hash is %s", hashedPassword)
+	u.HashedPassword = hashedPassword
 
 	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
 	//
