@@ -32,7 +32,7 @@ func NewArgon2(params argon2Params) Argon2 {
 }
 
 // GenerateFromPassword takes a plaintext string and generates an encoded has string with params in it
-func (a *Argon2) GenerateFromPassword(password string) (encodedHash string, err error) {
+func (a Argon2) GenerateFromPassword(password string) (encodedHash string, err error) {
 	salt, err := a.GenerateRandomBytes()
 
 	if err != nil {
@@ -55,7 +55,7 @@ func (a *Argon2) GenerateFromPassword(password string) (encodedHash string, err 
 }
 
 // GenerateRandomBytes is used to generate salt used by GenerateFromPassword
-func (a *Argon2) GenerateRandomBytes() ([]byte, error) {
+func (a Argon2) GenerateRandomBytes() ([]byte, error) {
 	b := make([]byte, a.params.saltLength)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -66,7 +66,7 @@ func (a *Argon2) GenerateRandomBytes() ([]byte, error) {
 }
 
 // ComparePasswordAndHash is used to compare a plaintext pw and an encoded pw hash with params inside.
-func (a *Argon2) ComparePasswordAndHash(password string, encodedHash string) (match bool, err error) {
+func (a Argon2) ComparePasswordAndHash(password string, encodedHash string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
 	p, salt, hash, err := a.DecodeHash(encodedHash)
@@ -87,7 +87,7 @@ func (a *Argon2) ComparePasswordAndHash(password string, encodedHash string) (ma
 }
 
 // DecodeHash function is used by ComparePasswordAndHash to extract params used by Argon2
-func (a *Argon2) DecodeHash(encodedHash string) (p *argon2Params, salt, hash []byte, err error) {
+func (a Argon2) DecodeHash(encodedHash string) (p *argon2Params, salt, hash []byte, err error) {
 	values := strings.Split(encodedHash, "$")
 
 	if len(values) != 6 {

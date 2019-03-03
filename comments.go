@@ -56,7 +56,7 @@ func main() {
 	}
 	pwc := PwChecker{}
 	pwh := NewArgon2(pwhParams)
-	h := NewHandler(pwc, &pwh, db)
+	h := NewHandler(pwc, pwh, db)
 
 	e.GET("/", h.Index)
 
