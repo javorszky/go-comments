@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// GetDb is a function to return an instance of an opened database after making sure it can be connected to
-func Get(config *config.Config) (db *gorm.DB, err error) {
+// GetInstance is a function to return an instance of an opened database after making sure it can be connected to
+func GetInstance(config *config.Config) (db *gorm.DB, err error) {
 	tries := 1
 	for tries < 5 {
 

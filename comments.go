@@ -18,7 +18,7 @@ func main() {
 		log.Fatalf("Failed getting config: %v", err)
 	}
 
-	db, err := database.Get(localConfig)
+	db, err := database.GetInstance(localConfig)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
