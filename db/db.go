@@ -22,7 +22,7 @@ func GetInstance(config *config.Config) (db *gorm.DB, err error) {
 			db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", config.DatabaseTable))
 			db.Exec(fmt.Sprintf("USE `%s`", config.DatabaseTable))
 			db.Close()
-			db, err = gorm.Open("mysql", fmt.Sprintf("%v:%v@%v/?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress))
+			db, err = gorm.Open("mysql", fmt.Sprintf("%s:%s@%s/%s?charset=utf8mb4&parseTime=True&loc=Local", config.DatabaseUser, config.DatabasePassword, config.DatabaseAddress, config.DatabaseTable))
 
 			return db, nil
 		}
