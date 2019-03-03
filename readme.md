@@ -4,13 +4,15 @@ A work in progress.
 
 Like Disqus, but doesn't suck.
 
-## How to host it locally with https and a domain
+## Installation / Usage
+
+### How to host it locally with https and a domain
 
 The domain is assumed to be `goapp.test`. You may need to configure your local tlds with dnsmasq or using your hosts file, depending on your system.
 
 It's also assumed you have nginx installed and that it responds to requests.
 
-### Nginx forwarding
+#### Nginx forwarding
 
 ```
 server {
@@ -40,7 +42,7 @@ Save this in a `.conf` file, and get nginx to load it for you, then restart ngin
 
 This config assumes you've already created your self signed certificates (see below).
 
-## Create the self signed certificate
+### Create the self signed certificate
 
 As per https://echo.labstack.com/cookbook/http2, you can use the following command in your app's directory to generate your certificate:
 
@@ -65,7 +67,7 @@ Once you have the files (`cert.pem` and `key.pem`), rename them to `cert.crt` an
 
 If you're on mac, open the Keychain Access app, and drag the `cert.crt` file into there. Search for **ACME**, and set it to always trust the certificate.
 
-## Set a .env file
+### Set a .env file
 
 The `.env` file needs to contain the following four things:
 
@@ -77,7 +79,7 @@ DB_ADDRESS=""
 PORT=<port for http. HTTPS is currently always on 1323>
 ```
 
-## How to use this with Docker?
+### How to use this with Docker?
 
 The repo has three docker related files:
 
@@ -91,3 +93,30 @@ All three files are needed for a successful docker initialisation. Then the only
 $ docker-compose up --build
 ```
 That way the app should be accessible on `https://localhost:5000`, which should be SSL, but the certificate should be untrusted.
+
+## Tooling decision
+
+### Password
+
+It was between `bcrypt` and `argon2`. In the end I went with Argon2 as that's the stronger of the two. I've essentially followed [How to Hash and Verify Passwords With Argon2 in Go](https://www.alexedwards.net/blog/how-to-hash-and-verify-passwords-with-argon2-in-go) by Alex Edwards (dated 10th December 2018) with some minor modifications around wrapping the functionality into a package I can pass into the app.
+
+### 2FA
+
+**Definitely not SMS based.**
+
+Initially I wanted to use the native Authy app and dashboard, but following some research, I decided against it.
+
+One reason is because in order for you to add an Authy token, you need the Authy app, and you need to tell them your phone number. As we've recently seen with Facebook, phone numbers are used to identify a user across services even if they didn't specifically consent. See the following reading material:
+
+* This entire Twitter thread: https://twitter.com/jeremyburge/status/1101402001907372032?s=19
+* This article about 2FA QR codes containing more information than they should: https://medium.com/crypto-punks/why-you-shouldnt-scan-two-factor-authentication-qr-codes-e2a44876a524
+
+Because of this I decided to roll my own using the standard itself, and only including the information necessary to create the TOTP (ie no domain, no email address) based on this article: [A DIY Two-Factor Authenticator in Golang](https://blog.gojekengineering.com/a-diy-two-factor-authenticator-in-golang-32e5641f6ec5) by Tilak Lodha (31st May 2018).
+
+### Magic link login
+
+Yes, to be developed...
+
+### Yubikey
+
+Yes, to be developed...
