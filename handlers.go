@@ -52,7 +52,7 @@ func (h *Handlers) Login(c echo.Context) error {
 }
 
 func (h *Handlers) Register(c echo.Context) error {
-	return c.Render(http.StatusOK, "register", "")
+	return c.Render(http.StatusOK, "register", c.Get("csrf"))
 }
 
 func (h *Handlers) RegisterPost(c echo.Context) (err error) {

@@ -11,6 +11,7 @@
         <input type="password" id="password2" name="password2">
     </label>
     <input type="submit" value="Register">
+    <input type="hidden" name="csrf" value="{{.}}">
 </form>
 {{ template "footer" }}
 {{ end }}
