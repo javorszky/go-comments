@@ -44,10 +44,11 @@ func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 type Handlers struct {
 	pwc PasswordChecker
 	pwh PasswordHasher
+	db  *gorm.DB
 }
 
-func NewHandler(pwc PasswordChecker, pwh PasswordHasher) Handlers {
-	return Handlers{pwc, pwh}
+func NewHandler(pwc PasswordChecker, pwh PasswordHasher, db *gorm.DB) Handlers {
+	return Handlers{pwc, pwh, db}
 }
 
 func (h *Handlers) Index(c echo.Context) error {
@@ -81,6 +82,8 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 	}
 
 	u.HashedPassword = hashedPassword
+
+	h.db.Create(&u)
 
 	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
 	//
