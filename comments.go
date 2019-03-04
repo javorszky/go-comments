@@ -62,6 +62,8 @@ func main() {
 
 	e.GET("/login", h.Login)
 
+	e.POST("/login", h.LoginPost)
+
 	e.POST("/register", h.RegisterPost)
 
 	e.GET("/register", h.Register)

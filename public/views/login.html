@@ -1,13 +1,14 @@
 {{define "login"}}
 {{ template "header" }}
 <form method="POST" action="/login">
-    <label for="username">Username:
-        <input type="text" id="username">
+    <label for="username">Email:
+        <input type="text" name="email" id="email">
     </label>
     <label for="password">Password:
-        <input type="password" id="password">
+        <input type="password" name="password" id="password">
     </label>
     <input type="submit" value="Login">
+    <input type="hidden" name="csrf" value="{{.}}">
 </form>
 {{ template "footer" }}
 {{ end }}
