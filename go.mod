@@ -2,7 +2,7 @@ module github.com/javorszky/go-comments
 
 require (
 	cloud.google.com/go v0.34.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.1
 	github.com/denisenkom/go-mssqldb v0.0.0-20190121005146-b04fd42d9952 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/jinzhu/gorm v1.9.2
