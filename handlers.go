@@ -129,12 +129,14 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 
 	u.HashedPassword = hashedPassword
 
-	if dbErrors := h.db.Create(&u).GetErrors(); dbErrors != nil {
+	if result := h.db.Create(&u); result.Error != nil {
 		data := BadRegister{
 			c.Get("csrf"),
-			dbErrors,
+			result.GetErrors(),
 		}
-		return c.Render(http.StatusBadRequest, "register", data)
+		return c.JSON(http.StatusConflict, data)
+
+		//return c.Render(http.StatusBadRequest, "register", data)
 	}
 
 	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
