@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
@@ -13,6 +15,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 var (
@@ -158,8 +161,30 @@ func TestRegisterPostGood(t *testing.T) {
 	c.SetPath("/register")
 
 	if assert.NoError(t, h.RegisterPost(c)) {
+		var origin map[string]interface{}
+		if err := json.Unmarshal([]byte(mockGoodUser), &origin); err != nil {
+			panic(err)
+		}
+
+		var dat map[string]interface{}
+
+		if err := json.Unmarshal(rec.Body.Bytes(), &dat); err != nil {
+			panic(err)
+		}
+
+		timeNow := time.Now()
+		timeString := fmt.Sprintf("%4d-%02d-%02dT%02d:%02d:%02d", timeNow.Year(), timeNow.Month(), timeNow.Day(), timeNow.Hour(), timeNow.Minute(), timeNow.Second())
+
+		created := strings.HasPrefix(dat["CreatedAt"].(string), timeString)
+		updated := strings.HasPrefix(dat["UpdatedAt"].(string), timeString)
+
+		assert.True(t, created)
+		assert.True(t, updated)
+		assert.NotNil(t, dat["ID"])
+		assert.Nil(t, dat["DeletedAt"])
+		assert.Equal(t, origin["email"], dat["email"])
+		assert.Equal(t, "hashedpassword", dat["passwordHash"])
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, mockGoodUserReturn, rec.Body.String())
 	}
 }
 
