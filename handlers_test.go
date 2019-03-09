@@ -2,8 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -13,7 +17,7 @@ import (
 
 var (
 	serveJS            = `console.log("The id of the thing requesting this was 44");`
-	mockGoodUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword"}`
+	mockGoodUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword", "csrf":"somevalue"}`
 	mockGoodUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password1":"somepassword","password2":"somepassword"}`
 
 	mockBadUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"someotherpass"}`
@@ -27,10 +31,13 @@ var (
 
 	e    *echo.Echo
 	mpwc MockPasswordChecker
+	pwh  PasswordHasher
+	db   *gorm.DB
 	h    Handlers
 )
 
 type MockPasswordChecker struct{}
+type MockPasswordHasher struct{}
 
 func (mpwc MockPasswordChecker) IsPasswordPwnd(password string) (bool, error) {
 	switch password {
@@ -43,10 +50,49 @@ func (mpwc MockPasswordChecker) IsPasswordPwnd(password string) (bool, error) {
 	}
 }
 
+func _CSRFSkipper(echo.Context) bool {
+	return true
+}
+
+func (mpwh MockPasswordHasher) GenerateFromPassword(password string) (string, error) {
+	if password == "canthashthis" {
+		return "", errors.New("hashing password failed")
+	}
+
+	return "hashedpassword", nil
+}
+
+func (mpwh MockPasswordHasher) ComparePasswordAndHash(password string, hash string) (bool, error) {
+	if "cantcomparethis" == password {
+		return false, errors.New("failed comparing password and hash")
+	} else if "goodpassword" == password {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 func TestMain(m *testing.M) {
 	e = echo.New()
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		Skipper: _CSRFSkipper,
+	}))
+
 	mpwc = MockPasswordChecker{}
-	h = NewHandler(mpwc)
+
+	pwh = MockPasswordHasher{}
+
+	mocket.Catcher.Register() // Safe register. Allowed multiple calls to save
+	mocket.Catcher.Logging = true
+	// GORM
+	DB, err := gorm.Open(mocket.DriverName, "connection_string") // Can be any connection string
+	if err != nil {
+		log.Fatal("Mocket failed to initialise.")
+	}
+
+	db = DB
+
+	h = NewHandler(mpwc, pwh, db)
 	SetRenderer(e)
 
 	os.Exit(m.Run())

@@ -12,6 +12,7 @@ require (
 	github.com/masonj88/pwchecker v0.0.0-20190204202648-b67b72f5d75b
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
+	github.com/selvatico/go-mocket v1.0.7
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
