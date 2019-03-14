@@ -184,16 +184,35 @@ func TestRegisterPostGood(t *testing.T) {
 	}
 }
 
-//func TestRegisterPostPasswordDontMatch(t *testing.T) {
-//	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
-//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-//	rec := httptest.NewRecorder()
-//
-//	c := e.NewContext(req, rec)
-//	c.SetPath("/register")
-//
-//	if assert.NoError(t, h.RegisterPost(c)) {
-//		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-//		assert.Equal(t, mockBadUserReturn, rec.Body.String())
-//	}
-//}
+func TestRegisterPostPasswordDontMatch(t *testing.T) {
+	var origin map[string]interface{}
+
+	body := new(bytes.Buffer)
+	mw := multipart.NewWriter(body)
+
+	if err := json.Unmarshal([]byte(mockBadUser), &origin); err != nil {
+		panic(err)
+	}
+
+	for k, f := range origin {
+		if err := mw.WriteField(k, f.(string)); err != nil {
+			panic(err)
+		}
+	}
+
+	if err := mw.Close(); err != nil {
+		panic(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/register", body)
+	req.Header.Set(echo.HeaderContentType, mw.FormDataContentType())
+	rec := httptest.NewRecorder()
+
+	c := e.NewContext(req, rec)
+	c.SetPath("/register")
+
+	if assert.NoError(t, h.RegisterPost(c)) {
+		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+		assert.Equal(t, mockBadUserReturn, rec.Body.String())
+	}
+}
