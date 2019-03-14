@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -141,31 +143,33 @@ func TestPageRenders(t *testing.T) {
 }
 
 func TestRegisterPostGood(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockGoodUser))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	var origin map[string]interface{}
+	var dat map[string]interface{}
+
+	body := new(bytes.Buffer)
+	mw := multipart.NewWriter(body)
+
+	if err := json.Unmarshal([]byte(mockGoodUser), &origin); err != nil {
+		panic(err)
+	}
+
+	for k, f := range origin {
+		mw.WriteField(k, f.(string))
+	}
+
+	mw.Close()
+
+	req := httptest.NewRequest(http.MethodPost, "/register", body)
+	req.Header.Set(echo.HeaderContentType, mw.FormDataContentType())
 	rec := httptest.NewRecorder()
 
 	c := e.NewContext(req, rec)
 	c.SetPath("/register")
 
 	if assert.NoError(t, h.RegisterPost(c)) {
-		var origin map[string]interface{}
-		if err := json.Unmarshal([]byte(mockGoodUser), &origin); err != nil {
-			panic(err)
-		}
-
-		var dat map[string]interface{}
-
 		if err := json.Unmarshal(rec.Body.Bytes(), &dat); err != nil {
 			panic(err)
 		}
-
-		timeCreatedAt, err := time.Parse(time.RFC3339Nano, dat["CreatedAt"].(string))
-		if err != nil {
-			assert.Fail(t, "could not parse time")
-		}
-
-		fmt.Println(timeCreatedAt)
 
 		timeNow := time.Now()
 		timeString := fmt.Sprintf("%4d-%02d-%02dT%02d:%02d:%02d", timeNow.Year(), timeNow.Month(), timeNow.Day(), timeNow.Hour(), timeNow.Minute(), timeNow.Second())
@@ -177,7 +181,7 @@ func TestRegisterPostGood(t *testing.T) {
 		assert.True(t, updated)
 		assert.NotNil(t, dat["ID"])
 		assert.Nil(t, dat["DeletedAt"])
-		assert.Equal(t, origin["CreatedAt"], origin["UpdatedAt"])
+		assert.Equal(t, dat["CreatedAt"], dat["UpdatedAt"])
 		assert.Equal(t, origin["email"], dat["email"])
 		assert.Equal(t, "hashedpassword", dat["passwordHash"])
 		assert.Equal(t, http.StatusOK, rec.Code)
