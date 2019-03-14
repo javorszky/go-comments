@@ -75,6 +75,7 @@ func (mpwh MockPasswordHasher) ComparePasswordAndHash(password string, hash stri
 	}
 }
 
+// Set up things for all testing functions.
 func TestMain(m *testing.M) {
 	e = echo.New()
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
