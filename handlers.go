@@ -110,8 +110,14 @@ func (h *Handlers) Register(c echo.Context) error {
 
 func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 	u := new(User)
+
 	if err = c.Bind(u); err != nil {
 		return fmt.Errorf("binding user failed")
+	}
+
+	if u.PasswordOne == "" || u.PasswordTwo == "" {
+		e := ResponseError{Error: "No password was passed."}
+		return c.JSON(http.StatusUnprocessableEntity, e)
 	}
 
 	if u.PasswordOne != u.PasswordTwo {
