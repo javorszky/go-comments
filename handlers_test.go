@@ -116,39 +116,26 @@ func TestServeJS(t *testing.T) {
 	}
 }
 
-func TestIndex(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	rec := httptest.NewRecorder()
-
-	c := e.NewContext(req, rec)
-	c.SetPath("/")
-
-	if assert.NoError(t, h.Index(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
+func TestPageRenders(t *testing.T) {
+	pairs := []struct {
+		Path         string
+		ExpectedCode int
+	}{
+		{"/", http.StatusOK},
+		{"/login", http.StatusOK},
+		{"/register", http.StatusOK},
 	}
-}
 
-func TestLogin(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/login", nil)
-	rec := httptest.NewRecorder()
+	for _, r := range pairs {
+		req := httptest.NewRequest(http.MethodGet, r.Path, nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
 
-	c := e.NewContext(req, rec)
-	c.SetPath("/login")
+		c.SetPath(r.Path)
 
-	if assert.NoError(t, h.Login(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
-	}
-}
-
-func TestRegister(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/register", nil)
-	rec := httptest.NewRecorder()
-
-	c := e.NewContext(req, rec)
-	c.SetPath("/register")
-
-	if assert.NoError(t, h.Register(c)) {
-		assert.Equal(t, http.StatusOK, rec.Code)
+		if assert.NoError(t, h.Index(c)) {
+			assert.Equal(t, r.ExpectedCode, rec.Code)
+		}
 	}
 }
 
