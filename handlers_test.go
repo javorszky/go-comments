@@ -146,10 +146,14 @@ func TestRegisterPostGood(t *testing.T) {
 	}
 
 	for k, f := range origin {
-		mw.WriteField(k, f.(string))
+		if err := mw.WriteField(k, f.(string)); err != nil {
+			panic(err)
+		}
 	}
 
-	mw.Close()
+	if err := mw.Close(); err != nil {
+		panic(err)
+	}
 
 	req := httptest.NewRequest(http.MethodPost, "/register", body)
 	req.Header.Set(echo.HeaderContentType, mw.FormDataContentType())
