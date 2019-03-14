@@ -21,18 +21,10 @@ import (
 )
 
 var (
-	serveJS            = `console.log("The id of the thing requesting this was 44");`
-	mockGoodUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword", "csrf":"somevalue"}`
-	mockGoodUserReturn = `{"ID":0,"CreatedAt":"0001-01-01T00:00:00Z","UpdatedAt":"0001-01-01T00:00:00Z","DeletedAt":null,"email":"test@example.com","name":"John Doe","password1":"somepassword","password2":"somepassword"}`
-
+	serveJS           = `console.log("The id of the thing requesting this was 44");`
+	mockGoodUser      = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"somepassword", "csrf":"somevalue"}`
 	mockBadUser       = `{"email":"test@example.com","name":"John Doe","password1":"somepassword", "password2":"someotherpass"}`
 	mockBadUserReturn = `{"error":"Passwords do not match."}`
-
-	mockNetworkErrorUser       = `{"email":"test@example.com","name":"John Doe","password1":"NetworkError", "password2":"NetworkError"}`
-	mockNetworkErrorUserReturn = `{"error":"HTTP request failed with error: Unavailable"}`
-
-	mockFoundPassUser       = `{"email":"test@example.com","name":"John Doe","password1":"FoundPassword", "password2":"FoundPassword"}`
-	mockFoundPassUserReturn = `{"error":"Password is found in the database."}`
 
 	e    *echo.Echo
 	mpwc MockPasswordChecker
@@ -188,44 +180,16 @@ func TestRegisterPostGood(t *testing.T) {
 	}
 }
 
-func TestRegisterPostPasswordDontMatch(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-
-	c := e.NewContext(req, rec)
-	c.SetPath("/register")
-
-	if assert.NoError(t, h.RegisterPost(c)) {
-		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-		assert.Equal(t, mockBadUserReturn, rec.Body.String())
-	}
-}
-
-func TestRegisterPostNetworkError(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockNetworkErrorUser))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-
-	c := e.NewContext(req, rec)
-	c.SetPath("/register")
-
-	if assert.NoError(t, h.RegisterPost(c)) {
-		assert.Equal(t, http.StatusBadGateway, rec.Code)
-		assert.Equal(t, mockNetworkErrorUserReturn, rec.Body.String())
-	}
-}
-
-func TestRegisterPasswordPawned(t *testing.T) {
-	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockFoundPassUser))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-
-	c := e.NewContext(req, rec)
-	c.SetPath("/register")
-
-	if assert.NoError(t, h.RegisterPost(c)) {
-		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
-		assert.Equal(t, mockFoundPassUserReturn, rec.Body.String())
-	}
-}
+//func TestRegisterPostPasswordDontMatch(t *testing.T) {
+//	req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(mockBadUser))
+//	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+//	rec := httptest.NewRecorder()
+//
+//	c := e.NewContext(req, rec)
+//	c.SetPath("/register")
+//
+//	if assert.NoError(t, h.RegisterPost(c)) {
+//		assert.Equal(t, http.StatusUnprocessableEntity, rec.Code)
+//		assert.Equal(t, mockBadUserReturn, rec.Body.String())
+//	}
+//}
