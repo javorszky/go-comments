@@ -172,6 +172,13 @@ func TestRegisterPostGood(t *testing.T) {
 			panic(err)
 		}
 
+		timeCreatedAt, err := time.Parse(time.RFC3339Nano, dat["CreatedAt"].(string))
+		if err != nil {
+			assert.Fail(t, "could not parse time")
+		}
+
+		fmt.Println(timeCreatedAt)
+
 		timeNow := time.Now()
 		timeString := fmt.Sprintf("%4d-%02d-%02dT%02d:%02d:%02d", timeNow.Year(), timeNow.Month(), timeNow.Day(), timeNow.Hour(), timeNow.Minute(), timeNow.Second())
 
@@ -182,6 +189,7 @@ func TestRegisterPostGood(t *testing.T) {
 		assert.True(t, updated)
 		assert.NotNil(t, dat["ID"])
 		assert.Nil(t, dat["DeletedAt"])
+		assert.Equal(t, origin["CreatedAt"], origin["UpdatedAt"])
 		assert.Equal(t, origin["email"], dat["email"])
 		assert.Equal(t, "hashedpassword", dat["passwordHash"])
 		assert.Equal(t, http.StatusOK, rec.Code)
