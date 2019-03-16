@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/middleware"
 	mocket "github.com/selvatico/go-mocket"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/go-playground/validator.v9"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -75,6 +76,7 @@ func TestMain(m *testing.M) {
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		Skipper: _CSRFSkipper,
 	}))
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	mpwc = MockPasswordChecker{}
 

@@ -5,6 +5,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
 	"github.com/masonj88/pwchecker"
+	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 	"regexp"
 )
@@ -16,6 +17,10 @@ type (
 		PasswordOne    string `form:"password1" gorm:"-" json:"-" validate:"required,min=8"`
 		PasswordTwo    string `form:"password2" gorm:"-" json:"-" validate:"omitempty,eqfield=PasswordOne"`
 		HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+	}
+
+	CustomValidator struct {
+		validator *validator.Validate
 	}
 
 	ResponseError struct {
@@ -33,6 +38,10 @@ type (
 
 	PwChecker struct{}
 )
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
 
 func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 	pwd, err := pwchecker.CheckForPwnage(password)

@@ -7,6 +7,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"gopkg.in/go-playground/validator.v9"
 	"log"
 )
 
@@ -34,6 +35,7 @@ func main() {
 
 	e := echo.New()
 	e.Use(middleware.Gzip())
+	e.Validator = &CustomValidator{validator: validator.New()}
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		TokenLookup:  "form:csrf",
 		TokenLength:  128,
