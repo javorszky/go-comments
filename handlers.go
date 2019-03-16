@@ -9,28 +9,30 @@ import (
 	"regexp"
 )
 
-type User struct {
-	gorm.Model
-	Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-	PasswordOne    string `form:"password1" gorm:"-" json:"-"`
-	PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
-	HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
-}
+type (
+	User struct {
+		gorm.Model
+		Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email" validate:"required,email"`
+		PasswordOne    string `form:"password1" gorm:"-" json:"-" validate:"required,min=8"`
+		PasswordTwo    string `form:"password2" gorm:"-" json:"-" validate:"omitempty,eqfield=PasswordOne"`
+		HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+	}
 
-type ResponseError struct {
-	Error string `json:"error"`
-}
+	ResponseError struct {
+		Error string `json:"error"`
+	}
 
-type PasswordChecker interface {
-	IsPasswordPwnd(string) (bool, error)
-}
+	PasswordChecker interface {
+		IsPasswordPwnd(string) (bool, error)
+	}
 
-type PasswordHasher interface {
-	GenerateFromPassword(string) (string, error)
-	ComparePasswordAndHash(string, string) (bool, error)
-}
+	PasswordHasher interface {
+		GenerateFromPassword(string) (string, error)
+		ComparePasswordAndHash(string, string) (bool, error)
+	}
 
-type PwChecker struct{}
+	PwChecker struct{}
+)
 
 func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 	pwd, err := pwchecker.CheckForPwnage(password)
