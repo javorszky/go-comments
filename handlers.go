@@ -126,6 +126,10 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 		return fmt.Errorf("binding user failed")
 	}
 
+	if err = c.Validate(u); err != nil {
+		return
+	}
+
 	if u.PasswordOne == "" || u.PasswordTwo == "" {
 		e := ResponseError{Error: "No password was passed."}
 		return c.JSON(http.StatusUnprocessableEntity, e)
