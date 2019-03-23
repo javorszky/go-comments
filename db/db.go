@@ -55,6 +55,33 @@ func RunMigrations(db *gorm.DB) error {
 				return tx.DropTable("users").Error
 			},
 		},
+		{
+			ID: "201903231810",
+			Migrate: func(tx *gorm.DB) error {
+				type Session struct {
+					ID        string `gorm:"type:varchar(36);primary_key"`
+					UserID    uint
+					CreatedAt time.Time
+					IP        string
+					UserAgent string
+				}
+
+				type User struct {
+					gorm.Model
+					Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+					PasswordOne    string `form:"password1" gorm:"-" json:"-"`
+					PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
+					HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+					Sessions       []Session
+				}
+				tx.AutoMigrate(&User{}, &Session{})
+
+				return tx.Model(&Session{}).AddForeignKey("user_id", "users(id)", "CASCADE", "RESTRICT").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable("sessions").Error
+			},
+		},
 	})
 
 	return m.Migrate()

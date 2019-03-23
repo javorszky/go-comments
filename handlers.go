@@ -7,6 +7,7 @@ import (
 	"github.com/masonj88/pwchecker"
 	"net/http"
 	"regexp"
+	"time"
 )
 
 type User struct {
@@ -15,6 +16,15 @@ type User struct {
 	PasswordOne    string `form:"password1" gorm:"-" json:"-"`
 	PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
 	HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+	Sessions       []Session
+}
+
+type Session struct {
+	ID        string `gorm:"type:varchar(36);primary_key"`
+	UserID    uint
+	CreatedAt time.Time
+	IP        string
+	UserAgent string
 }
 
 type ResponseError struct {
