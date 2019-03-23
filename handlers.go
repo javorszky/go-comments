@@ -19,14 +19,6 @@ type User struct {
 	Sessions       []Session
 }
 
-type Session struct {
-	ID        string `gorm:"type:varchar(36);primary_key"`
-	UserID    uint
-	CreatedAt time.Time
-	IP        string
-	UserAgent string
-}
-
 type ResponseError struct {
 	Error string `json:"error"`
 }
@@ -105,6 +97,16 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 
 	if !match {
 		return c.JSON(http.StatusUnauthorized, ResponseError{"Passwords do not match."})
+	}
+
+	session_id, err := h.setSession(user, c)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session."})
+	}
+
+	cookieError := h.setSessionCookie(session_id, c)
+	if cookieError != nil {
+		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session cookie."})
 	}
 
 	return c.JSON(http.StatusOK, ResponseError{"Passwords match."})
@@ -190,4 +192,34 @@ TLS Version: %v<br>
 </code>
 `
 	return c.HTML(http.StatusOK, fmt.Sprintf(format, req.Proto, req.Host, req.RemoteAddr, req.Method, req.URL.Path, req.TLS.NegotiatedProtocol, req.TLS.Version))
+}
+
+/*
+Internal function to set the session for a user for a given context.
+
+It gets the ID of the user, and IP and User Agent from the context.
+Session also has a BeforeCreate hook (see sessions.go) that will
+create a uuidv4 as an ID.
+*/
+func (h *Handlers) setSession(u *User, c echo.Context) (string, error) {
+	session := Session{
+		UserID:    u.ID,
+		IP:        c.Request().RemoteAddr,
+		UserAgent: c.Request().UserAgent(),
+	}
+
+	if result := h.db.Create(&session); result.Error != nil {
+		return "", result.Error
+	}
+
+	return session.ID, nil
+}
+
+func (h *Handlers) setSessionCookie(id string, c echo.Context) error {
+	cookie := new(http.Cookie)
+	cookie.Name = "gocomments_session"
+	cookie.Value = id
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	c.SetCookie(cookie)
+	return c.String(http.StatusOK, "write a cookie")
 }
