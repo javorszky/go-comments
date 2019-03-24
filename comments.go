@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"log"
+	"net/http"
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 	log.Printf("Migration did run successfully")
 
 	e := echo.New()
+	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Gzip())
 	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
 		TokenLookup:  "form:csrf",
@@ -76,6 +78,13 @@ func main() {
 		fmt.Print("Port not in env, setting it to 8090")
 		port = "8090"
 	}
+
+	// Admin routes
+	g := e.Group("/admin")
+	g.Use(h.SessionCheck)
+	g.GET("", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, ResponseError{"YAY but noaked"})
+	})
 
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))

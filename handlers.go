@@ -12,11 +12,11 @@ import (
 
 type User struct {
 	gorm.Model
-	Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-	PasswordOne    string `form:"password1" gorm:"-" json:"-"`
-	PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
-	HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
-	Sessions       []Session
+	Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+	PasswordOne    string    `form:"password1" gorm:"-" json:"-"`
+	PasswordTwo    string    `form:"password2" gorm:"-" json:"-"`
+	HashedPassword string    `json:"passwordHash" gorm:"type:varchar(255)"`
+	Sessions       []Session `gorm:"auto_preload"`
 }
 
 type ResponseError struct {
@@ -222,4 +222,21 @@ func (h *Handlers) setSessionCookie(id string, c echo.Context) error {
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "write a cookie")
+}
+
+func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cookie, err := c.Cookie("gocomments_session")
+		if err != nil {
+			c.Error(err)
+		}
+
+		session := &Session{}
+
+		if h.db.Where("id = ?", cookie.Value).First(session).RecordNotFound() {
+			return c.Redirect(http.StatusFound, "/login")
+		}
+
+		return next(c)
+	}
 }

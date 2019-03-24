@@ -8,7 +8,7 @@ import (
 type Session struct {
 	ID        string `gorm:"type:varchar(36);primary_key"`
 	UserID    uint
-	CreatedAt time.Time
+	CreatedAt time.Time `gorm:"index:created_at"`
 	IP        string
 	UserAgent string
 }

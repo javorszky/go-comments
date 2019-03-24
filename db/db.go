@@ -61,18 +61,18 @@ func RunMigrations(db *gorm.DB) error {
 				type Session struct {
 					ID        string `gorm:"type:varchar(36);primary_key"`
 					UserID    uint
-					CreatedAt time.Time
+					CreatedAt time.Time `gorm:"index:created_at"`
 					IP        string
 					UserAgent string
 				}
 
 				type User struct {
 					gorm.Model
-					Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-					PasswordOne    string `form:"password1" gorm:"-" json:"-"`
-					PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
-					HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
-					Sessions       []Session
+					Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+					PasswordOne    string    `form:"password1" gorm:"-" json:"-"`
+					PasswordTwo    string    `form:"password2" gorm:"-" json:"-"`
+					HashedPassword string    `json:"passwordHash" gorm:"type:varchar(255)"`
+					Sessions       []Session `gorm:"auto_preload"`
 				}
 				tx.AutoMigrate(&User{}, &Session{})
 
