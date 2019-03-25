@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	rs "github.com/javorszky/go-comments/randomstring"
@@ -210,9 +211,7 @@ func (h *Handlers) setSession(u *User, c echo.Context) (string, error) {
 	salt := rs.Generate(16)
 	secret := rs.Generate(32)
 	source := fmt.Sprintf("%s%s", salt, secret)
-	hasher := sha512.New512_256()
-	hasher.Write([]byte(source))
-	hString := b64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	hString := h.hashString(source)
 
 	session := Session{
 		UserID:    u.ID,
@@ -226,6 +225,12 @@ func (h *Handlers) setSession(u *User, c echo.Context) (string, error) {
 	}
 
 	return fmt.Sprintf("%s|%s", session.ID, source), nil
+}
+
+func (h *Handlers) hashString(source string) string {
+	hasher := sha512.New512_256()
+	hasher.Write([]byte(source))
+	return b64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }
 
 func (h *Handlers) setSessionCookie(id string, c echo.Context) error {
@@ -246,7 +251,11 @@ func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
 
 		session := &Session{}
 
-		if h.db.Where("id = ?", cookie.Value).First(session).RecordNotFound() {
+		splits := strings.Split(cookie.Value, "|")
+
+		hString := h.hashString(splits[1])
+
+		if h.db.Where("id = ?", splits[0]).Where("hash = ?", hString).First(session).RecordNotFound() {
 			return c.Redirect(http.StatusFound, "/login")
 		}
 
