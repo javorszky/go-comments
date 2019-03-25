@@ -15,6 +15,7 @@ import (
 	"github.com/masonj88/pwchecker"
 )
 
+// User model definition.
 type User struct {
 	gorm.Model
 	Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
@@ -24,21 +25,26 @@ type User struct {
 	Sessions       []Session `gorm:"auto_preload"`
 }
 
+// ResponseError is a generic struct to be turned into JSON in responses.
 type ResponseError struct {
 	Error string `json:"error"`
 }
 
+// PasswordChecker interface to check pw against haveIbeenpwnd API.
 type PasswordChecker interface {
 	IsPasswordPwnd(string) (bool, error)
 }
 
+// PasswordHasher interface to hash and check passwords.
 type PasswordHasher interface {
 	GenerateFromPassword(string) (string, error)
 	ComparePasswordAndHash(string, string) (bool, error)
 }
 
+// PwChecker struct implements haveIbeenpwnd API checker.
 type PwChecker struct{}
 
+// IsPasswordPwnd is a utility function that checks pw against haveIbeenpwnd API.
 func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 	pwd, err := pwchecker.CheckForPwnage(password)
 	if err != nil {
@@ -48,29 +54,35 @@ func (pw PwChecker) IsPasswordPwnd(password string) (bool, error) {
 	return pwd.Pwnd, nil
 }
 
+// Handlers struct holds db, passwordhasher, and passwordchecker implementations.
 type Handlers struct {
 	pwc PasswordChecker
 	pwh PasswordHasher
 	db  *gorm.DB
 }
 
+// BadRegister is a helper struct to return an error and CSRF token.
 type BadRegister struct {
 	Csrf   interface{}
 	Errors []error
 }
 
+// NewHandler returns a struct with given implementations.
 func NewHandler(pwc PasswordChecker, pwh PasswordHasher, db *gorm.DB) Handlers {
 	return Handlers{pwc, pwh, db}
 }
 
+// Index handles GET request to /.
 func (h *Handlers) Index(c echo.Context) error {
 	return c.Render(http.StatusOK, "index", "")
 }
 
+// Login handles GET request to /login.
 func (h *Handlers) Login(c echo.Context) error {
 	return c.Render(http.StatusOK, "login", c.Get("csrf"))
 }
 
+// LoginPost handles POST request to /login.
 func (h *Handlers) LoginPost(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -104,12 +116,12 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ResponseError{"Passwords do not match."})
 	}
 
-	sessionId, err := h.setSession(user, c)
+	sessionID, err := h.setSession(user, c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session."})
 	}
 
-	cookieError := h.setSessionCookie(sessionId, c)
+	cookieError := h.setSessionCookie(sessionID, c)
 	if cookieError != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session cookie."})
 	}
@@ -117,6 +129,7 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 	return c.JSON(http.StatusOK, ResponseError{"Passwords match."})
 }
 
+// Register handles GET requests to /register.
 func (h *Handlers) Register(c echo.Context) error {
 	data := BadRegister{
 		c.Get("csrf"),
@@ -125,6 +138,7 @@ func (h *Handlers) Register(c echo.Context) error {
 	return c.Render(http.StatusOK, "register", data)
 }
 
+// RegisterPost handles POST requests to /register.
 func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 	u := new(User)
 
@@ -178,11 +192,13 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 	return c.JSON(http.StatusOK, u)
 }
 
+// ServeJS is handling requests to /:id/js.
 func (h *Handlers) ServeJS(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
 	return c.Render(http.StatusOK, "client.js", c.Param("id"))
 }
 
+// Request is a utility function that helps debug connection details.
 func (h *Handlers) Request(c echo.Context) error {
 	req := c.Request()
 	format := `
@@ -227,21 +243,40 @@ func (h *Handlers) setSession(u *User, c echo.Context) (string, error) {
 	return fmt.Sprintf("%s|%s", session.ID, source), nil
 }
 
+/*
+hashString is a utility function. Calculates the SHA512_256 hash
+of a given string, and returns the base64 URL encoded representation
+of the source.
+*/
 func (h *Handlers) hashString(source string) string {
 	hasher := sha512.New512_256()
 	hasher.Write([]byte(source))
 	return b64.URLEncoding.EncodeToString(hasher.Sum(nil))
 }
 
-func (h *Handlers) setSessionCookie(id string, c echo.Context) error {
+/*
+setSessionCookie sets a session cookie with the given value.
+
+Session cookie is valid for 24 hours.
+*/
+func (h *Handlers) setSessionCookie(value string, c echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "gocomments_session"
-	cookie.Value = id
+	cookie.Value = value
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "write a cookie")
 }
 
+/*
+SessionCheck is a middleware. It takes the context, extracts the cookie,
+and then looks up whether there is a session in the database with the
+details in the cookie.
+
+If there isn't, it redirects to login page with 302.
+
+If there is, it calls the next middleware.
+*/
 func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cookie, err := c.Cookie("gocomments_session")
