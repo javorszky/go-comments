@@ -99,12 +99,12 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, ResponseError{"Passwords do not match."})
 	}
 
-	session_id, err := h.setSession(user, c)
+	sessionId, err := h.setSession(user, c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session."})
 	}
 
-	cookieError := h.setSessionCookie(session_id, c)
+	cookieError := h.setSessionCookie(sessionId, c)
 	if cookieError != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session cookie."})
 	}
