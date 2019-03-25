@@ -50,7 +50,7 @@ func main() {
 
 	SetRenderer(e)
 
-	pwhParams := argon2Params{
+	pwhParams := Argon2Params{
 		memory:      64 * 1024,
 		iterations:  3,
 		parallelism: 2,

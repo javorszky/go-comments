@@ -6,16 +6,18 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/argon2"
 	"strings"
+
+	"golang.org/x/crypto/argon2"
 )
 
 var (
-	ErrInvalidHash         = errors.New("the encoded hash is not in the correct format")
-	ErrIncompatibleVersion = errors.New("incompatible version of argon2")
+	errInvalidHash         = errors.New("the encoded hash is not in the correct format")
+	errIncompatibleVersion = errors.New("incompatible version of argon2")
 )
 
-type argon2Params struct {
+// Argon2Params struct holds the params used to generate passwords.
+type Argon2Params struct {
 	memory      uint32
 	iterations  uint32
 	parallelism uint8
@@ -23,11 +25,13 @@ type argon2Params struct {
 	keyLength   uint32
 }
 
+// Argon2 struct holds the password hasher.
 type Argon2 struct {
-	params argon2Params
+	params Argon2Params
 }
 
-func NewArgon2(params argon2Params) Argon2 {
+// NewArgon2 generator function returns an instance of Argon2 struct with given params.
+func NewArgon2(params Argon2Params) Argon2 {
 	return Argon2{params: params}
 }
 
@@ -87,11 +91,11 @@ func (a Argon2) ComparePasswordAndHash(password string, encodedHash string) (mat
 }
 
 // DecodeHash function is used by ComparePasswordAndHash to extract params used by Argon2
-func (a Argon2) DecodeHash(encodedHash string) (p *argon2Params, salt, hash []byte, err error) {
+func (a Argon2) DecodeHash(encodedHash string) (p *Argon2Params, salt, hash []byte, err error) {
 	values := strings.Split(encodedHash, "$")
 
 	if len(values) != 6 {
-		return nil, nil, nil, ErrInvalidHash
+		return nil, nil, nil, errInvalidHash
 	}
 
 	var version int
@@ -100,10 +104,10 @@ func (a Argon2) DecodeHash(encodedHash string) (p *argon2Params, salt, hash []by
 		return nil, nil, nil, err
 	}
 	if version != argon2.Version {
-		return nil, nil, nil, ErrIncompatibleVersion
+		return nil, nil, nil, errIncompatibleVersion
 	}
 
-	p = &argon2Params{}
+	p = &Argon2Params{}
 	_, err = fmt.Sscanf(values[3], "m=%d,t=%d,p=%d", &p.memory, &p.iterations, &p.parallelism)
 	if err != nil {
 		return nil, nil, nil, err
