@@ -11,6 +11,7 @@ type Session struct {
 	CreatedAt time.Time `gorm:"index:created_at"`
 	IP        string
 	UserAgent string
+	Hash      string
 }
 
 func (s *Session) BeforeCreate() (err error) {

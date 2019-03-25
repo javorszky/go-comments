@@ -82,6 +82,32 @@ func RunMigrations(db *gorm.DB) error {
 				return tx.DropTable("sessions").Error
 			},
 		},
+		{
+			ID: "201903251327",
+			Migrate: func(tx *gorm.DB) error {
+				type Session struct {
+					ID        string `gorm:"type:varchar(36);primary_key"`
+					UserID    uint
+					CreatedAt time.Time `gorm:"index:created_at"`
+					IP        string
+					UserAgent string
+					Hash      string
+				}
+
+				return tx.AutoMigrate(&Session{}).Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				type Session struct {
+					ID        string `gorm:"type:varchar(36);primary_key"`
+					UserID    uint
+					CreatedAt time.Time `gorm:"index:created_at"`
+					IP        string
+					UserAgent string
+					Hash      string
+				}
+				return tx.Model(&Session{}).DropColumn("hash").Error
+			},
+		},
 	})
 
 	return m.Migrate()

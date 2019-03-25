@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/javorszky/go-comments/config"
-	"github.com/javorszky/go-comments/db"
+	database "github.com/javorszky/go-comments/db"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"log"
-	"net/http"
 )
 
 func main() {

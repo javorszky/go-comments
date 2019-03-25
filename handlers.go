@@ -1,13 +1,17 @@
 package main
 
 import (
+	"crypto/sha512"
+	b64 "encoding/base64"
 	"fmt"
-	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo"
-	"github.com/masonj88/pwchecker"
 	"net/http"
 	"regexp"
 	"time"
+
+	rs "github.com/javorszky/go-comments/randomstring"
+	"github.com/jinzhu/gorm"
+	"github.com/labstack/echo"
+	"github.com/masonj88/pwchecker"
 )
 
 type User struct {
@@ -202,17 +206,26 @@ Session also has a BeforeCreate hook (see sessions.go) that will
 create a uuidv4 as an ID.
 */
 func (h *Handlers) setSession(u *User, c echo.Context) (string, error) {
+
+	salt := rs.Generate(16)
+	secret := rs.Generate(32)
+	source := fmt.Sprintf("%s%s", salt, secret)
+	hasher := sha512.New512_256()
+	hasher.Write([]byte(source))
+	hString := b64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
 	session := Session{
 		UserID:    u.ID,
 		IP:        c.Request().RemoteAddr,
 		UserAgent: c.Request().UserAgent(),
+		Hash:      hString,
 	}
 
 	if result := h.db.Create(&session); result.Error != nil {
 		return "", result.Error
 	}
 
-	return session.ID, nil
+	return fmt.Sprintf("%s|%s", session.ID, source), nil
 }
 
 func (h *Handlers) setSessionCookie(id string, c echo.Context) error {
