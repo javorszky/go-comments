@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
 	"html/template"
 	"io"
 	"path/filepath"
+
+	"github.com/labstack/echo"
+	"github.com/labstack/gommon/log"
 )
 
 // Template struct for working with templates and echo
@@ -19,7 +20,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
-// Get variadic function that takes any number of single glob patterns
+// GetTemplates is a variadic function that takes any number of single glob patterns
 func GetTemplates(paths ...string) (templates []string, err error) {
 	for _, path := range paths {
 		files, err := filepath.Glob(path)
@@ -32,6 +33,7 @@ func GetTemplates(paths ...string) (templates []string, err error) {
 	return templates, nil
 }
 
+// GetTemplateFiles will return a list of files in the public views dir
 func GetTemplateFiles() ([]string, error) {
 	files, err := GetTemplates("public/js/*.js", "public/views/partials/*.html", "public/views/*.html")
 
@@ -43,6 +45,7 @@ func GetTemplateFiles() ([]string, error) {
 
 }
 
+// SetRenderer will attach the renderer to the echo instance
 func SetRenderer(e *echo.Echo) {
 	files, err := GetTemplateFiles()
 

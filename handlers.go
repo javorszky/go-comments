@@ -129,6 +129,7 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 	return cookieError
 }
 
+// Logout serves GET to /logout. Destroys cookie
 func (h *Handlers) Logout(c echo.Context) error {
 	err := h.destroySessionCookie(c)
 	if err != nil {
@@ -181,26 +182,12 @@ func (h *Handlers) RegisterPost(c echo.Context) (err error) {
 			result.GetErrors(),
 		}
 		return c.JSON(http.StatusConflict, data)
-
-		//return c.Render(http.StatusBadRequest, "register", data)
 	}
-
-	//pwdCheck, err := h.pwc.IsPasswordPwnd(u.PasswordOne)
-	//
-	//// Something went wrong while checking the API
-	//if err != nil {
-	//	e := ResponseError{Error: err.Error()}
-	//	return c.JSON(http.StatusBadGateway, e)
-	//}
-	//
-	//if pwdCheck {
-	//	e := ResponseError{Error: "Password is found in the database."}
-	//	return c.JSON(http.StatusUnprocessableEntity, e)
-	//}
 
 	return c.JSON(http.StatusOK, u)
 }
 
+// Admin serves GET request to /admin
 func (h *Handlers) Admin(c echo.Context) error {
 	return c.Render(http.StatusOK, "admin", nil)
 }
@@ -281,6 +268,7 @@ func (h *Handlers) setSessionCookie(value string, c echo.Context) error {
 	return c.Redirect(http.StatusFound, "/admin")
 }
 
+// destroySessionCookie sets the expiration of the cookie to 1 year before.
 func (h *Handlers) destroySessionCookie(c echo.Context) error {
 	cookie := new(http.Cookie)
 	cookie.Name = "gocomments_session"
