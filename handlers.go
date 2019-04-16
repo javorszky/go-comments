@@ -126,7 +126,7 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, ResponseError{"Something went wrong with setting the session cookie."})
 	}
 
-	return c.JSON(http.StatusOK, ResponseError{"Passwords match."})
+	return cookieError
 }
 
 func (h *Handlers) Logout(c echo.Context) error {
@@ -278,7 +278,7 @@ func (h *Handlers) setSessionCookie(value string, c echo.Context) error {
 	cookie.Value = value
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
-	return c.String(http.StatusOK, "write a cookie")
+	return c.Redirect(http.StatusFound, "/admin")
 }
 
 func (h *Handlers) destroySessionCookie(c echo.Context) error {
