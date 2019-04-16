@@ -285,7 +285,7 @@ func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cookie, err := c.Cookie("gocomments_session")
 		if err != nil {
-			c.Error(err)
+			return c.Redirect(http.StatusFound, "/login")
 		}
 
 		session := &Session{}
