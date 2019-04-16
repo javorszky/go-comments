@@ -192,6 +192,10 @@ func (h *Handlers) Admin(c echo.Context) error {
 	return c.Render(http.StatusOK, "admin", nil)
 }
 
+func (h *Handlers) AdminSites(c echo.Context) error {
+	return c.Render(http.StatusOK, "adminsites", nil)
+}
+
 // ServeJS is handling requests to /:id/js.
 func (h *Handlers) ServeJS(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)

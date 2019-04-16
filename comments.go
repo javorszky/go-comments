@@ -84,6 +84,7 @@ func main() {
 	g := e.Group("/admin")
 	g.Use(h.SessionCheck)
 	g.GET("", h.Admin)
+	g.GET("/sites", h.AdminSites)
 
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
