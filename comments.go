@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/javorszky/go-comments/config"
 	database "github.com/javorszky/go-comments/db"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"log"
 )
 
 func main() {
@@ -83,9 +81,7 @@ func main() {
 	// Admin routes
 	g := e.Group("/admin")
 	g.Use(h.SessionCheck)
-	g.GET("", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, ResponseError{"YAY but noaked"})
-	})
+	g.GET("", h.Admin)
 
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
