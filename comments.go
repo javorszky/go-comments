@@ -67,6 +67,8 @@ func main() {
 
 	e.POST("/register", h.RegisterPost)
 
+	e.GET("/logout", h.Logout)
+
 	e.GET("/register", h.Register)
 
 	e.GET("/:id/js", h.ServeJS)

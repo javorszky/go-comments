@@ -129,6 +129,15 @@ func (h *Handlers) LoginPost(c echo.Context) error {
 	return c.JSON(http.StatusOK, ResponseError{"Passwords match."})
 }
 
+func (h *Handlers) Logout(c echo.Context) error {
+	err := h.destroySessionCookie(c)
+	if err != nil {
+		return c.JSON(http.StatusBadGateway, ResponseError{"Destroying the cookie failed"})
+	}
+
+	return err
+}
+
 // Register handles GET requests to /register.
 func (h *Handlers) Register(c echo.Context) error {
 	data := BadRegister{
@@ -270,6 +279,15 @@ func (h *Handlers) setSessionCookie(value string, c echo.Context) error {
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	c.SetCookie(cookie)
 	return c.String(http.StatusOK, "write a cookie")
+}
+
+func (h *Handlers) destroySessionCookie(c echo.Context) error {
+	cookie := new(http.Cookie)
+	cookie.Name = "gocomments_session"
+	cookie.Value = ""
+	cookie.Expires = time.Now().AddDate(-1, 0, 0)
+	c.SetCookie(cookie)
+	return c.Redirect(http.StatusFound, "/login")
 }
 
 /*
