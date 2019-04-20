@@ -204,7 +204,17 @@ func (h *Handlers) Admin(c echo.Context) error {
 
 // AdminSites handles GET /admin/sites to list all sites a user has
 func (h *Handlers) AdminSites(c echo.Context) error {
-	return c.Render(http.StatusOK, "adminsites", nil)
+	user, ok := c.Get("model.user").(User)
+
+	if !ok {
+		panic("not okay")
+	}
+
+	var sites []Site
+
+	h.db.Model(&user).Association("Sites").Find(&sites)
+
+	return c.Render(http.StatusOK, "adminsites", sites)
 }
 
 // AdminSitesNew handles GET /admin/sites/new to display a form to add new sites.

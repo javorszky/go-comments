@@ -1,8 +1,24 @@
 {{define "adminsites"}}
 {{ template "header" }}
-<p>Welcome to the Sites list!</p>
+<h1>Sites</h1>
 <p><a href="/admin">Go to admin</a></p>
 <p><a href="/admin/sites/new">Add new site</a></p>
 <p><a href="logout">Log out</a></p>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Designation</th>
+        <th>Allowed sites</th>
+        <th>Action</th>
+    </tr>
+    {{range .}}
+        <tr>
+            <td>{{.ID}}</td>
+            <td>{{.Designation}}</td>
+            <td>{{.Domains}}</td>
+            <td>Edit / Delete</td>
+        </tr>
+    {{end}}
+</table>
 {{ template "footer" }}
 {{ end }}
