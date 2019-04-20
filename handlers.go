@@ -312,6 +312,12 @@ func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.Redirect(http.StatusFound, "/login")
 		}
 
+		user := User{}
+
+		h.db.Where("id = ?", session.UserID).First(&user)
+
+		c.Set("model.user", user)
+
 		return next(c)
 	}
 }
