@@ -108,6 +108,43 @@ func RunMigrations(db *gorm.DB) error {
 				return tx.Model(&Session{}).DropColumn("hash").Error
 			},
 		},
+		{
+			ID: "201904201411",
+			Migrate: func(tx *gorm.DB) error {
+				type Site struct {
+					gorm.Model
+					UserID      uint
+					Designation string `gorm:"type:varchar(191);not null;unique"`
+					Domain      string `gorm:"type:varchar(191)"`
+				}
+
+				type Session struct {
+					ID        string `gorm:"type:varchar(36);primary_key"`
+					UserID    uint
+					CreatedAt time.Time `gorm:"index:created_at"`
+					IP        string
+					UserAgent string
+					Hash      string
+				}
+
+				type User struct {
+					gorm.Model
+					Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+					PasswordOne    string    `form:"password1" gorm:"-" json:"-"`
+					PasswordTwo    string    `form:"password2" gorm:"-" json:"-"`
+					HashedPassword string    `json:"passwordHash" gorm:"type:varchar(255)"`
+					Sessions       []Session `gorm:"auto_preload"`
+					Sites          []Site    `gorm:"auto_preload"`
+				}
+
+				tx.AutoMigrate(&Site{})
+
+				return tx.Model(&Site{}).AddForeignKey("user_id", "users(id)", "CASCADE", "RESTRICT").Error
+			},
+			Rollback: func(tx *gorm.DB) error {
+				return tx.DropTable("sites").Error
+			},
+		},
 	})
 
 	return m.Migrate()
