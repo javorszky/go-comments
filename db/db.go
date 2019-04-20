@@ -115,7 +115,7 @@ func RunMigrations(db *gorm.DB) error {
 					gorm.Model
 					UserID      uint
 					Designation string `gorm:"type:varchar(191);not null;unique"`
-					Domain      string `gorm:"type:varchar(191)"`
+					Domains     string `gorm:"type:text"`
 				}
 
 				type Session struct {
@@ -129,12 +129,12 @@ func RunMigrations(db *gorm.DB) error {
 
 				type User struct {
 					gorm.Model
-					Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-					PasswordOne    string    `form:"password1" gorm:"-" json:"-"`
-					PasswordTwo    string    `form:"password2" gorm:"-" json:"-"`
-					HashedPassword string    `json:"passwordHash" gorm:"type:varchar(255)"`
-					Sessions       []Session `gorm:"auto_preload"`
-					Sites          []Site    `gorm:"auto_preload"`
+					Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+					PasswordOne    string `form:"password1" gorm:"-" json:"-"`
+					PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
+					HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+					Sessions       []Session
+					Sites          []Site
 				}
 
 				tx.AutoMigrate(&Site{})
