@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha512"
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -15,14 +16,23 @@ import (
 	"github.com/masonj88/pwchecker"
 )
 
+// Site model definition
+type Site struct {
+	gorm.Model
+	UserID      uint
+	Designation string `form:"designation" gorm:"type:varchar(191);not null;unique"`
+	Domains     string `form:"domains" gorm:"type:varchar(191)"`
+}
+
 // User model definition.
 type User struct {
 	gorm.Model
-	Email          string    `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
-	PasswordOne    string    `form:"password1" gorm:"-" json:"-"`
-	PasswordTwo    string    `form:"password2" gorm:"-" json:"-"`
-	HashedPassword string    `json:"passwordHash" gorm:"type:varchar(255)"`
-	Sessions       []Session `gorm:"auto_preload"`
+	Email          string `json:"email" form:"email" gorm:"type:varchar(191);unique_index:email"`
+	PasswordOne    string `form:"password1" gorm:"-" json:"-"`
+	PasswordTwo    string `form:"password2" gorm:"-" json:"-"`
+	HashedPassword string `json:"passwordHash" gorm:"type:varchar(255)"`
+	Sessions       []Session
+	Sites          []Site
 }
 
 // ResponseError is a generic struct to be turned into JSON in responses.
@@ -198,6 +208,35 @@ func (h *Handlers) AdminSites(c echo.Context) error {
 
 func (h *Handlers) AdminSitesNew(c echo.Context) error {
 	return c.Render(http.StatusOK, "adminnewsite", c.Get("csrf"))
+}
+
+// AdminSitesNewPost handles POST /admin/sites/new to add a new entry to the sites
+func (h *Handlers) AdminSitesNewPost(c echo.Context) error {
+	user, ok := c.Get("model.user").(User)
+
+	if !ok {
+		panic("not okay")
+	}
+
+	domains, err := json.Marshal(strings.Split(c.FormValue("domains"), "\r\n"))
+
+	if err != nil {
+		panic("Can't split thingies")
+	}
+
+	domainsString := string(domains)
+
+	site := Site{
+		Domains:     domainsString,
+		Designation: c.FormValue("designation"),
+		UserID:      user.ID,
+	}
+
+	if result := h.db.Create(&site); result.Error != nil {
+		return c.String(http.StatusBadRequest, "Something failed while saving")
+	}
+
+	return c.String(http.StatusCreated, "lel")
 }
 
 // ServeJS is handling requests to /:id/js.
