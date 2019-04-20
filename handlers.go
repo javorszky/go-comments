@@ -251,6 +251,20 @@ func (h *Handlers) AdminSitesNewPost(c echo.Context) error {
 	return c.String(http.StatusCreated, "lel")
 }
 
+func (h *Handlers) AdminSessions(c echo.Context) error {
+	user, ok := c.Get("model.user").(User)
+
+	if !ok {
+		panic("not okay")
+	}
+
+	var sessions []Session
+
+	h.db.Model(&user).Association("Sessions").Find(&sessions)
+
+	return c.Render(http.StatusOK, "adminsessions", sessions)
+}
+
 // ServeJS is handling requests to /:id/js.
 func (h *Handlers) ServeJS(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)

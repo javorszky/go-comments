@@ -1,0 +1,23 @@
+{{define "adminsessions"}}
+{{ template "header" }}
+<h1>Sessions</h1>
+<p><a href="/admin">Go to admin</a></p>
+<p><a href="/logout">Log out</a></p>
+<table>
+    <tr>
+        <th>Created</th>
+        <th>IP</th>
+        <th>User Agent</th>
+        <th>Action</th>
+    </tr>
+    {{range .}}
+        <tr>
+            <td>{{.CreatedAt}}</td>
+            <td>{{.IP}}</td>
+            <td>{{.UserAgent}}</td>
+            <td>Edit / Delete</td>
+        </tr>
+    {{end}}
+</table>
+{{ template "footer" }}
+{{ end }}

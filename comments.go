@@ -90,6 +90,8 @@ func main() {
 	g.GET("/sites/new", h.AdminSitesNew)
 	g.POST("/sites/new", h.AdminSitesNewPost)
 
+	g.GET("/sessions", h.AdminSessions)
+
 	// e.Logger.Fatal(e.Start(":" + port))
 	e.Logger.Fatal(e.StartTLS(":1323", "cert.crt", "key.key"))
 }
