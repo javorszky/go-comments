@@ -1,0 +1,21 @@
+{{define "adminnewsite"}}
+{{ template "header" }}
+<h1>Add a new site</h1>
+<p><a href="/admin">Go to admin</a></p>
+<p><a href="/admin/sites">Back to sites</a></p>
+<p><a href="logout">Log out</a></p>
+<form action="/admin/sites/new" method="post">
+    <input type="hidden" name="csrf" value="{{.}}">
+
+    <label for="designation">Designation:
+        <input type="text" name="designation" id="designation">
+    </label>
+
+    <label for="domains">Domains. One per line:
+        <textarea name="domains" id="domains" cols="30" rows="3"></textarea>
+    </label>
+
+    <input type="submit" value="Add new site">
+</form>
+{{ template "footer" }}
+{{ end }}
