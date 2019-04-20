@@ -23,6 +23,8 @@ func main() {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
+	db.LogMode(localConfig.DatabaseDebug)
+
 	defer db.Close()
 
 	m := database.RunMigrations(db)
