@@ -202,15 +202,17 @@ func (h *Handlers) Admin(c echo.Context) error {
 	return c.Render(http.StatusOK, "admin", nil)
 }
 
+// AdminSites handles GET /admin/sites to list all sites a user has
 func (h *Handlers) AdminSites(c echo.Context) error {
 	return c.Render(http.StatusOK, "adminsites", nil)
 }
 
+// AdminSitesNew handles GET /admin/sites/new to display a form to add new sites.
 func (h *Handlers) AdminSitesNew(c echo.Context) error {
 	return c.Render(http.StatusOK, "adminnewsite", c.Get("csrf"))
 }
 
-// AdminSitesNewPost handles POST /admin/sites/new to add a new entry to the sites
+// AdminSitesNewPost handles POST /admin/sites/new to add a new entry to the sites.
 func (h *Handlers) AdminSitesNewPost(c echo.Context) error {
 	user, ok := c.Get("model.user").(User)
 
