@@ -258,11 +258,22 @@ func (h *Handlers) AdminSessions(c echo.Context) error {
 		panic("not okay")
 	}
 
+	sessionID, ok := c.Get("model.session").(string)
+	if !ok {
+		panic("Really not okay")
+	}
+
 	var sessions []Session
 
 	h.db.Model(&user).Association("Sessions").Find(&sessions)
 
-	return c.Render(http.StatusOK, "adminsessions", sessions)
+	return c.Render(http.StatusOK, "adminsessions", struct {
+		Sessions []Session
+		Current  string
+	}{
+		Sessions: sessions,
+		Current:  sessionID,
+	})
 }
 
 func (h *Handlers) DeleteSession(c echo.Context) error {
@@ -388,6 +399,7 @@ func (h *Handlers) SessionCheck(next echo.HandlerFunc) echo.HandlerFunc {
 		h.db.Where("id = ?", session.UserID).First(&user)
 
 		c.Set("model.user", user)
+		c.Set("model.session", session.ID)
 
 		return next(c)
 	}

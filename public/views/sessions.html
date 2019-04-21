@@ -10,12 +10,12 @@
         <th>User Agent</th>
         <th>Action</th>
     </tr>
-    {{range .}}
+    {{range .Sessions}}
         <tr>
             <td>{{.CreatedAt}}</td>
             <td>{{.IP}}</td>
             <td>{{.UserAgent}}</td>
-            <td><a href="/admin/sessions/delete/{{.ID}}">Log this session out</a></td>
+            <td><a href="/admin/sessions/delete/{{.ID}}">Terminate{{if eq .ID $.Current}} (this one) {{end}}</a></td>
         </tr>
     {{end}}
 </table>
