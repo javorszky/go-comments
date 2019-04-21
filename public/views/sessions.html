@@ -15,7 +15,7 @@
             <td>{{.CreatedAt}}</td>
             <td>{{.IP}}</td>
             <td>{{.UserAgent}}</td>
-            <td>Edit / Delete</td>
+            <td><a href="/admin/sessions/delete/{{.ID}}">Log this session out</a></td>
         </tr>
     {{end}}
 </table>

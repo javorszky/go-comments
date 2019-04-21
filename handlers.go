@@ -265,6 +265,12 @@ func (h *Handlers) AdminSessions(c echo.Context) error {
 	return c.Render(http.StatusOK, "adminsessions", sessions)
 }
 
+func (h *Handlers) DeleteSession(c echo.Context) error {
+	h.db.Delete(Session{}, "ID = ?", c.Param("id"))
+
+	return c.Redirect(http.StatusFound, "/admin/sessions")
+}
+
 // ServeJS is handling requests to /:id/js.
 func (h *Handlers) ServeJS(c echo.Context) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJavaScript)
